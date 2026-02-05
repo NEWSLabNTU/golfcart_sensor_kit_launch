@@ -28,7 +28,7 @@ The sensor kit provides mounting points and calibration for:
 
 ### 2. AutoSDV Sensor Kit Launch
 
-Located in `autosdv_sensor_kit_launch/`, this package contains launch files for:
+Located in `golfcart_sensor_kit_launch/`, this package contains launch files for:
 
 #### LiDAR Sensors
 
@@ -81,7 +81,7 @@ The `sensing.launch.xml` file provides a combined launch configuration for all s
 To launch all sensors:
 
 ```bash
-ros2 launch autosdv_sensor_kit_launch sensing.launch.xml
+ros2 launch golfcart_sensor_kit_launch sensing.launch.xml
 ```
 
 ### Launching Specific Sensors
@@ -90,16 +90,16 @@ To launch only specific sensors:
 
 ```bash
 # LiDAR only
-ros2 launch autosdv_sensor_kit_launch lidar.launch.xml
+ros2 launch golfcart_sensor_kit_launch lidar.launch.xml
 
 # Camera only
-ros2 launch autosdv_sensor_kit_launch camera.launch.xml
+ros2 launch golfcart_sensor_kit_launch camera.launch.xml
 
 # IMU only
-ros2 launch autosdv_sensor_kit_launch imu.launch.xml
+ros2 launch golfcart_sensor_kit_launch imu.launch.xml
 
 # GNSS only
-ros2 launch autosdv_sensor_kit_launch gnss.launch.xml
+ros2 launch golfcart_sensor_kit_launch gnss.launch.xml
 ```
 
 ### Configuration
@@ -110,24 +110,24 @@ Each sensor can be configured through launch arguments:
 
 ```bash
 # Specify LiDAR model (cube1 or robin-w)
-ros2 launch autosdv_sensor_kit_launch lidar.launch.xml lidar_model:=cube1
+ros2 launch golfcart_sensor_kit_launch lidar.launch.xml lidar_model:=cube1
 
 # Specify LiDAR IP address
-ros2 launch autosdv_sensor_kit_launch lidar.launch.xml host_ip:=192.168.26.1
+ros2 launch golfcart_sensor_kit_launch lidar.launch.xml host_ip:=192.168.26.1
 ```
 
 #### Camera Configuration
 
 ```bash
 # Specify camera model
-ros2 launch autosdv_sensor_kit_launch camera.launch.xml camera_model:=zedxm
+ros2 launch golfcart_sensor_kit_launch camera.launch.xml camera_model:=zedxm
 ```
 
 #### GNSS Configuration
 
 ```bash
 # Specify GNSS receiver type (garmin, ublox, or septentrio)
-ros2 launch autosdv_sensor_kit_launch gnss.launch.xml gnss_receiver:=ublox
+ros2 launch golfcart_sensor_kit_launch gnss.launch.xml gnss_receiver:=ublox
 ```
 
 ## Integration with Autoware

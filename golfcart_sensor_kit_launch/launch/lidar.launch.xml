@@ -20,7 +20,7 @@
       </group>
 
       <group if="$(eval &quot;'$(var lidar_model)'=='robin-w'&quot;)">
-	<include file="$(find-pkg-share autosdv_sensor_kit_launch)/launch/ivu_pc2.py" if="$(var launch_driver)">
+	<include file="$(find-pkg-share golfcart_sensor_kit_launch)/launch/ivu_pc2.py" if="$(var launch_driver)">
           <arg name="device_ip" value="$(var robin_w_device_ip)"/>
 	</include>
       </group>
@@ -29,12 +29,12 @@
         <include file="$(find-pkg-share nebula_ros)/launch/velodyne_launch_all_hw.xml" if="$(var launch_driver)">
 	  <arg name="sensor_model" value="VLP32" />
 	  <arg name="launch_hw" value="true" />
-	  <arg name="config_file" value="$(find-pkg-share autosdv_sensor_kit_launch)/config/VLP32.param.yaml" />
+	  <arg name="config_file" value="$(find-pkg-share golfcart_sensor_kit_launch)/config/VLP32.param.yaml" />
 	</include>
       </group>
     </group>
 
-    <include file="$(find-pkg-share autosdv_sensor_kit_launch)/launch/pointcloud_preprocessor.launch.py" if="$(eval &quot;'$(var lidar_model)'=='vlp32c'&quot;)">
+    <include file="$(find-pkg-share golfcart_sensor_kit_launch)/launch/pointcloud_preprocessor.launch.py" if="$(eval &quot;'$(var lidar_model)'=='vlp32c'&quot;)">
       <arg name="base_frame" value="base_link"/>
       <arg name="use_intra_process" value="true"/>
       <arg name="use_multithread" value="true"/>
