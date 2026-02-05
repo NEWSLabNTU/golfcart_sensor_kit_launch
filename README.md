@@ -1,10 +1,10 @@
-# AutoSDV Sensor Kit
+# Golf Cart Sensor Kit
 
-This package provides the sensor kit description and launch files for the AutoSDV autonomous vehicle platform. It enables integration of various sensors with the Autoware autonomous driving stack.
+This package provides the sensor kit description and launch files for the Golf Cart autonomous vehicle platform. It enables integration of various sensors with the Autoware autonomous driving stack.
 
 ## Overview
 
-The AutoSDV sensor kit consists of:
+The Golf Cart sensor kit consists of:
 
 1. **Sensor Kit Description**: URDF models and calibration files describing the physical arrangement of sensors on the vehicle
 2. **Sensor Launch Files**: ROS2 launch configurations for different types of sensors
@@ -12,9 +12,9 @@ The AutoSDV sensor kit consists of:
 
 ## Components
 
-### 1. AutoSDV Sensor Kit Description
+### 1. Golf Cart Sensor Kit Description
 
-Located in `autosdv_sensor_kit_description/`, this package contains:
+Located in `golfcart_sensor_kit_description/`, this package contains:
 
 - URDF models for the sensor kit (`urdf/sensor_kit.xacro`, `urdf/sensors.xacro`)
 - Calibration parameters for sensor positioning (`config/sensor_kit_calibration.yaml`)
@@ -26,7 +26,7 @@ The sensor kit provides mounting points and calibration for:
 - IMU (MPU9250)
 - GNSS receivers
 
-### 2. AutoSDV Sensor Kit Launch
+### 2. Golf Cart Sensor Kit Launch
 
 Located in `golfcart_sensor_kit_launch/`, this package contains launch files for:
 
@@ -151,7 +151,7 @@ The sensor kit integrates with Autoware through the following topics:
 ## Sensor Calibration
 
 Sensor positions and orientations are defined in:
-- `autosdv_sensor_kit_description/config/sensor_kit_calibration.yaml`
+- `golfcart_sensor_kit_description/config/sensor_kit_calibration.yaml`
 
 To update sensor calibration:
 1. Measure the physical positions of sensors relative to the base link
