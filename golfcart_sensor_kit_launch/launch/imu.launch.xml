@@ -7,7 +7,7 @@
     <push-ros-namespace namespace="imu"/>
 
     <arg name="imu_raw_name" default="mpu9250/imu_raw"/>
-    <arg name="imu_corrector_param_file" default="$(find-pkg-share individual_params)/config/$(var vehicle_id)/autosdv_sensor_kit/imu_corrector.param.yaml"/>
+    <arg name="imu_corrector_param_file" default="$(find-pkg-share individual_params)/config/$(var vehicle_id)/golfcart_sensor_kit/imu_corrector.param.yaml"/>
 
     <group>
       <push-ros-namespace namespace="mpu9250"/>
