@@ -1,30 +1,18 @@
 <launch>
   <arg name="launch_driver" default="true"/>
-  <arg name="lidar_model" default="vlp32c" description="cube1, robin-w, or vlp32c"/>
+  <arg name="lidar_model" default="vlp32c" description="vlp32c"/>
   <!-- <arg name="host_ip" default="192.168.26.1"/> -->
   <arg name="use_concat_filter" default="true"/>
   <arg name="vehicle_id" default="$(env VEHICLE_ID default)"/>
   <arg name="vehicle_mirror_param_file"/>
   <arg name="use_pointcloud_container" default="false" description="launch pointcloud container"/>
   <arg name="pointcloud_container_name" default="pointcloud_container"/>
-  <arg name="robin_w_device_ip" default="172.168.1.10"/>
   <arg name="vlp32c_device_ip" default="192.168.7.10"/>
 
   <group>
     <push-ros-namespace namespace="lidar"/>
 
     <group>
-      <group if="$(eval &quot;'$(var lidar_model)'=='cube1'&quot;)">
-	<include file="$(find-pkg-share blickfeld_driver)/launch/live_scanner_component.launch.py" if="$(var launch_driver)">
-	</include>
-      </group>
-
-      <group if="$(eval &quot;'$(var lidar_model)'=='robin-w'&quot;)">
-	<include file="$(find-pkg-share golfcart_sensor_kit_launch)/launch/ivu_pc2.py" if="$(var launch_driver)">
-          <arg name="device_ip" value="$(var robin_w_device_ip)"/>
-	</include>
-      </group>
-
       <group if="$(eval &quot;'$(var lidar_model)'=='vlp32c'&quot;)">
         <include file="$(find-pkg-share nebula_ros)/launch/velodyne_launch_all_hw.xml" if="$(var launch_driver)">
 	  <arg name="sensor_model" value="VLP32" />
@@ -34,7 +22,7 @@
       </group>
     </group>
 
-    <include file="$(find-pkg-share golfcart_sensor_kit_launch)/launch/pointcloud_preprocessor.launch.py" if="$(eval &quot;'$(var lidar_model)'=='vlp32c'&quot;)">
+    <include file="$(find-pkg-share golfcart_sensor_kit_launch)/launch/pointcloud_preprocessor.launch.py">
       <arg name="base_frame" value="base_link"/>
       <arg name="use_intra_process" value="true"/>
       <arg name="use_multithread" value="true"/>

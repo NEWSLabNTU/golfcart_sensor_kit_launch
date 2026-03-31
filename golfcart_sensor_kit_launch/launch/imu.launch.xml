@@ -6,16 +6,18 @@
   <group>
     <push-ros-namespace namespace="imu"/>
 
-    <arg name="imu_raw_name" default="mpu9250/imu_raw"/>
+    <!-- TODO: Replace with Tamagawa IMU driver when available -->
+    <arg name="imu_raw_name" default="tamagawa/imu_raw"/>
     <arg name="imu_corrector_param_file" default="$(find-pkg-share individual_params)/config/$(var vehicle_id)/golfcart_sensor_kit/imu_corrector.param.yaml"/>
 
+    <!--
     <group>
-      <push-ros-namespace namespace="mpu9250"/>
-      <node pkg="mpu9250driver" exec="mpu9250driver" name="mpu9250driver_node" output="screen" if="$(var launch_driver)">
+      <push-ros-namespace namespace="tamagawa"/>
+      <node pkg="tamagawa_imu_driver" exec="tamagawa_imu_node" name="tamagawa_imu_node" output="screen" if="$(var launch_driver)">
         <remap from="imu" to="imu_raw"/>
-        <param from="$(find-pkg-share mpu9250driver)/params/mpu9250.yaml"/>
       </node>
     </group>
+    -->
 
     <include file="$(find-pkg-share autoware_imu_corrector)/launch/imu_corrector.launch.xml">
       <arg name="input_topic" value="$(var imu_raw_name)"/>
