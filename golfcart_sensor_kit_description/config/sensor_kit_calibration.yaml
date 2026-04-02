@@ -1,8 +1,8 @@
 sensor_kit_base_link:
   lidar: # Cube1 Lidar
-    x: 0.0
+    x: 46.0
     y: 0.0
-    z: 0.0
+    z: 196.0
     roll: 0.0
     pitch: 0.0
     yaw: 0.0
@@ -14,16 +14,16 @@ sensor_kit_base_link:
   #   pitch: 0.0
   #   yaw: 0.0
   imu_link:
-    x: 0.0
-    y: 0.0
-    z: 0.0
+    x: -67.0
+    y: 3.0
+    z: 181.0
     roll: 0.0
     pitch: 0.0
     yaw: 0.0
   gnss_base_link:
-    x: 0.0
+    x: 83.0
     y: 0.0
-    z: 0.0
+    z: 169.0
     roll: 0.0
     pitch: 0.0
     yaw: 0.0
