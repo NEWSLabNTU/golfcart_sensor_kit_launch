@@ -1,6 +1,6 @@
 <launch>
   <arg name="launch_driver" default="true"/>
-  <arg name="gnss_receiver" default="garmin" description="ublox(default) or septentrio"/>
+  <arg name="gnss_receiver" default="ublox" description="ublox(default) or septentrio"/>
 
   <group>
     <push-ros-namespace namespace="gnss"/>
