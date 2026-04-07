@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    host_ip: 255.255.255.255
+    host_ip: 192.168.7.1
     sensor_ip: 192.168.7.10
     data_port: 2368
     gnss_port: 2369
@@ -19,3 +19,4 @@
     sensor_model: VLP32
     rotation_speed: 600
     return_mode: Dual
+    udp_only: true
