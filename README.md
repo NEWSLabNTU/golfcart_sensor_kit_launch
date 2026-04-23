@@ -39,7 +39,7 @@ Supported LiDAR models:
 
 Launch files:
 - `launch/lidar.launch.xml`: Main launch file for LiDAR sensors
-- `launch/ivu_pc2.py`: Launch file for Robin-W LiDAR integration
+- `launch/seyond_start.py`: Launch file for Seyond LiDAR integration
 
 #### Camera Sensors
 
