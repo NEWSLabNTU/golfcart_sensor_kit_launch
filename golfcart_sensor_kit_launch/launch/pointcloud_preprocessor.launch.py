@@ -25,22 +25,6 @@ from launch_ros.descriptions import ComposableNode
 
 
 def launch_setup(context, *args, **kwargs):
-    # Get the lidar model from launch configuration
-    lidar_model = LaunchConfiguration("lidar_model").perform(context)
-
-    # Define valid lidar models and their corresponding topics
-    valid_lidar_models = {
-        "vlp32c": "/sensing/lidar/velodyne_points",
-        "cube1": "/sensing/lidar/bf_lidar/points_raw",
-        "robin-w": "/sensing/lidar/iv_points"
-    }
-
-    # Determine input topic based on lidar model
-    if lidar_model not in valid_lidar_models:
-        valid_models_str = ", ".join(valid_lidar_models.keys())
-        raise ValueError(f"Invalid lidar_model value: '{lidar_model}'. Valid values are: {valid_models_str}")
-
-    input_topic = valid_lidar_models[lidar_model]
 
     # set concat filter as a component
     concat_component = ComposableNode(
@@ -53,7 +37,7 @@ def launch_setup(context, *args, **kwargs):
         ],
         parameters=[
             {
-                "input_topics": [input_topic, input_topic],
+                "input_topics": ["/iv_points", "/sensing/lidar/vlp32/velodyne_points"],
                 "output_frame": LaunchConfiguration("base_frame"),
                 "input_twist_topic_type": "twist",
                 "publish_synchronized_pointcloud": True,
