@@ -19,7 +19,7 @@
     <!-- sensor -->
     <xacro:property name="calibration" value="${xacro.load_yaml('$(arg config_dir)/sensor_kit_calibration.yaml')}"/>
 
-    <!-- lidar -->
+    <!-- VLP lidar -->
     <joint name="lidar_joint" type="fixed">
       <origin  
         xyz="${calibration['sensor_kit_base_link']['vlp32c']['x']}
@@ -30,10 +30,32 @@
              ${calibration['sensor_kit_base_link']['vlp32c']['yaw']}"
       />
       <parent link="sensor_kit_base_link"/>
-      <child link="lidar"/>
+      <child link="vlp_lidar"/>
     </joint>
     
-    <link name="lidar">
+    <link name="vlp_lidar">
+      <inertial>
+        <mass value="0.1"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+      </inertial>
+    </link>
+
+    <!-- Falcon lidar -->
+    <joint name="falcon_lidar_joint" type="fixed">
+      <origin  
+        xyz="${calibration['sensor_kit_base_link']['falcon']['x']}
+             ${calibration['sensor_kit_base_link']['falcon']['y']}
+             ${calibration['sensor_kit_base_link']['falcon']['z']}"
+        rpy="${calibration['sensor_kit_base_link']['falcon']['roll']}
+             ${calibration['sensor_kit_base_link']['falcon']['pitch']}
+             ${calibration['sensor_kit_base_link']['falcon']['yaw']}"
+      />
+      <parent link="sensor_kit_base_link"/>
+      <child link="falcon_lidar"/>
+    </joint>
+    
+    <link name="falcon_lidar">
       <inertial>
         <mass value="0.1"/>
         <origin xyz="0 0 0"/>
@@ -85,7 +107,7 @@
     </link>
 
 
-    <!-- TODO: Add USB/Tier IV camera frames when camera integration is ready -->
+    <!-- TODO, Add USB/Tier IV camera frames when camera integration is ready -->
 
   </xacro:macro>
 </robot>
