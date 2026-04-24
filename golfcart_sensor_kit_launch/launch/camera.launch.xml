@@ -1,15 +1,46 @@
 <launch>
   <arg name="launch_driver" default="true"/>
   <arg name="camera_type" default="left"/>
-  <arg name="camera_model" default="zedxm"/>
+  <arg name="camera_model" default="usb"/>
+  <arg name="enable_stereo_output" default="false" description="Enable left/right stereo output (for Isaac SLAM)"/>
 
-  <group>
-    <push-ros-namespace namespace="camera"/>
+  <!-- USB Camera Device Arguments -->
+  <!-- Might need to swap the orders -->
+  <!--
+  <arg name="rear_camera_device" default="/dev/v4l/by-id/usb-Ability_GMSL2-USB3.0_Conversion_Kit_C1-Master-video-index2"/>
+  -->
+  <arg name="left_camera_device" default="/dev/v4l/by-id/usb-Ability_GMSL2-USB3.0_Conversion_Kit_C1-Master-video-index0"/>
+  <arg name="right_camera_device" default="/dev/v4l/by-id/usb-Ability_GMSL2-USB3.0_Conversion_Kit_C1-Master-video-index1"/>
 
-    <include file="$(find-pkg-share zed_wrapper)/launch/zed_camera.launch.py" if="$(var launch_driver)">
-      <arg name="camera_name" value="$(var camera_model)"/>
-      <arg name="camera_model" value="$(var camera_model)"/>
-    </include>
+  <!-- USB Cameras Group -->
+  <group if="$(eval &quot;'$(var camera_model)'=='usb'&quot;)">
+	  <!-- Rear USB Camera -->
+      <!--
+	  <group if="$(var use_rear_camera)">
+		  <node pkg="gscam" exec="gscam_node" name="usb_camera_rear" output="screen">
+			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/usb_camera_rear.yaml"/>
+			  <remap from="camera/image_raw" to="/sensing/camera/rear/image_raw"/>
+			  <remap from="camera/camera_info" to="/sensing/camera/rear/camera_info"/>
+		  </node>
+	  </group>
+      -->
 
+	  <!-- Left USB Camera -->
+	  <group if="$(var use_left_camera)">
+		  <node pkg="gscam" exec="gscam_node" name="usb_camera_left" output="screen">
+			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/usb_camera_left.yaml"/>
+			  <remap from="camera/image_raw" to="/sensing/camera/left/image_raw"/>
+			  <remap from="camera/camera_info" to="/sensing/camera/left/camera_info"/>
+		  </node>
+	  </group>
+
+	  <!-- Right USB Camera -->
+	  <group if="$(var use_right_camera)">
+		  <node pkg="gscam" exec="gscam_node" name="usb_camera_right" output="screen">
+			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/usb_camera_right.yaml"/>
+			  <remap from="camera/image_raw" to="/sensing/camera/right/image_raw"/>
+			  <remap from="camera/camera_info" to="/sensing/camera/right/camera_info"/>
+		  </node>
+	  </group>
   </group>
 </launch>

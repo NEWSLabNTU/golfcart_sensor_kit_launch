@@ -1,0 +1,32 @@
+/**:
+  ros__parameters:
+    # Camera device configuration
+    video_device: "/dev/video2"
+    camera_name: "usb_camera_left"
+    camera_info_url: ""
+    frame_id: "usb_camera_left_optical_link"
+
+    # Image settings
+    image_width: 1920
+    image_height: 1280
+    framerate: 30.0
+
+    # GStreamer pipeline for hardware acceleration on Jetson
+    gscam_config: "v4l2src device=/dev/video2 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! nvvidconv ! video/x-raw,format=RGBA ! videoconvert ! video/x-raw,format=RGB"
+
+    # Camera control parameters
+    auto_exposure: true
+    auto_white_balance: true
+    brightness: 128
+    contrast: 128
+    saturation: 128
+
+    # Image processing
+    image_encoding: "rgb8"
+    sync_sink: true
+    preroll: false
+    use_gst_timestamps: true
+
+    # Performance settings
+    reopen_on_eof: false
+    camera_info_rescale: true
