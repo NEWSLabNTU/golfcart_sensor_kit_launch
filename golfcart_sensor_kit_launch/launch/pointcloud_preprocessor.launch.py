@@ -13,6 +13,9 @@
 # limitations under the License.
 
 
+import os
+
+from ament_index_python.packages import get_package_share_directory
 import launch
 from launch.actions import DeclareLaunchArgument
 from launch.actions import OpaqueFunction
@@ -22,9 +25,16 @@ from launch.conditions import UnlessCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import LoadComposableNodes
 from launch_ros.descriptions import ComposableNode
+from launch_ros.parameter_descriptions import ParameterFile
 
 
 def launch_setup(context, *args, **kwargs):
+    concatenate_and_time_sync_node_param = ParameterFile(
+        param_file=LaunchConfiguration("concatenate_and_time_sync_node_param_path").perform(
+            context
+        ),
+        allow_substs=True,
+    )
 
     # set concat filter as a component
     concat_component = ComposableNode(
@@ -34,15 +44,9 @@ def launch_setup(context, *args, **kwargs):
         remappings=[
             ("~/input/twist", "/sensing/vehicle_velocity_converter/twist_with_covariance"),
             ("output", "concatenated/pointcloud"),
+            ("output_info", "concatenated/pointcloud_info"),
         ],
-        parameters=[
-            {
-                "input_topics": ["/iv_points", "/sensing/lidar/vlp32/velodyne_points"],
-                "output_frame": LaunchConfiguration("base_frame"),
-                "input_twist_topic_type": "twist",
-                "publish_synchronized_pointcloud": True,
-            }
-        ],
+        parameters=[concatenate_and_time_sync_node_param],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
     )
 
@@ -67,7 +71,14 @@ def generate_launch_description():
     add_launch_arg("use_intra_process", "False")
     add_launch_arg("pointcloud_container_name", "pointcloud_container")
     add_launch_arg("use_concat_filter", "True")
-    add_launch_arg("lidar_model", "vlp32c")  # Default to velodyne lidar
+    add_launch_arg(
+        "concatenate_and_time_sync_node_param_path",
+        os.path.join(
+            get_package_share_directory("golfcart_sensor_kit_launch"),
+            "config",
+            "concatenate_and_time_sync_node.param.yaml",
+        ),
+    )
 
     set_container_executable = SetLaunchConfiguration(
         "container_executable",
