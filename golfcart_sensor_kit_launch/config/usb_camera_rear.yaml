@@ -3,7 +3,7 @@
     # Camera device configuration
     video_device: "/dev/video0"
     camera_name: "usb_camera_rear"
-    camera_info_url: ""
+    camera_info_url: "package://golfcart_sensor_kit_launch/config/usb_camera_rear_calibration.yaml"
     frame_id: "usb_camera_rear_optical_link"
 
     # Image settings
