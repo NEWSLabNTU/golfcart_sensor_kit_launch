@@ -61,25 +61,24 @@ disambiguate the three adapters. The suffix there (`-video-index0`,
 `/dev/v4l/by-path/` keys off the USB port and is stable per-cabling:
 
 ```
-platform-3610000.usb-usb-0:2.2:1.0-video-index0 -> video4   (capture)
-platform-3610000.usb-usb-0:2.3:1.0-video-index0 -> video2   (capture)
-platform-3610000.usb-usb-0:2.4:1.0-video-index0 -> video0   (capture)
+platform-3610000.usb-usb-0:2.2:1.0-video-index0 -> video0   (capture, left)
+platform-3610000.usb-usb-0:2.3:1.0-video-index0 -> video2   (capture, rear)
+platform-3610000.usb-usb-0:2.4:1.0-video-index0 -> video4   (capture, right)
 ```
 
-For now the YAMLs use raw `/dev/video{0,2,4}`; if enumeration order ever
-shifts, switch to the `by-path` symlinks above (or add udev rules keyed on
-`KERNELS==".../2.N:1.0"`).
+The trailing digit of the USB port (`2.2` / `2.3` / `2.4`) is the stable
+by-path identifier for each camera. The YAMLs use the `by-path` symlinks so
+that physical assignment stays correct regardless of enumeration order.
 
 ## Current YAML → device mapping
 
-| YAML                     | device       |
-| ------------------------ | ------------ |
-| `usb_camera_rear.yaml`   | `/dev/video0` |
-| `usb_camera_left.yaml`   | `/dev/video2` |
-| `usb_camera_right.yaml`  | `/dev/video4` |
+| YAML                     | by-path symlink                                                  | resolves to   |
+| ------------------------ | ---------------------------------------------------------------- | ------------- |
+| `usb_camera_left.yaml`   | `/dev/v4l/by-path/platform-3610000.usb-usb-0:2.2:1.0-video-index0` | `/dev/video0` |
+| `usb_camera_rear.yaml`   | `/dev/v4l/by-path/platform-3610000.usb-usb-0:2.3:1.0-video-index0` | `/dev/video2` |
+| `usb_camera_right.yaml`  | `/dev/v4l/by-path/platform-3610000.usb-usb-0:2.4:1.0-video-index0` | `/dev/video4` |
 
-Physical left/right/rear assignment still needs to be confirmed by viewing
-each stream.
+Physical left/right/rear assignment confirmed by viewing each stream.
 
 ## Reproducing the pipeline standalone
 
