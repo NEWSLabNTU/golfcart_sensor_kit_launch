@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    debug_mode: false
+    debug_mode: true
     rosbag_length: 10.0
     maximum_queue_size: 5
     timeout_sec: 0.2
@@ -11,7 +11,8 @@
     synchronized_pointcloud_postfix: pointcloud
     input_twist_topic_type: twist
     input_topics: [
-                    "/iv_points",
+                    # "/iv_points",
+                    "/sensing/lidar/falcon/iv_points",
                     "/sensing/lidar/vlp32/velodyne_points",
                 ]
     output_frame: $(var base_frame)

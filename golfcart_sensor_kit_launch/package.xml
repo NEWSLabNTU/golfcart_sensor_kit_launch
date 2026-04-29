@@ -12,10 +12,9 @@
 
   <exec_depend>autoware_gnss_poser</exec_depend>
   <exec_depend>pointcloud_preprocessor</exec_depend>
-  <exec_depend>tamagawa_imu_driver</exec_depend>
   <exec_depend>topic_tools</exec_depend>
   <exec_depend>ublox_gps</exec_depend>
-  <exec_depend>usb_cam</exec_depend>
+  <exec_depend>gscam</exec_depend>
   <exec_depend>nmea_navsat_driver</exec_depend>
   <exec_depend>innovusion</exec_depend>
 

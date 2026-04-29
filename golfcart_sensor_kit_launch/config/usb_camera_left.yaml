@@ -4,7 +4,7 @@
     video_device: "/dev/v4l/by-path/platform-3610000.usb-usb-0:2.2:1.0-video-index0"
     camera_name: "usb_camera_left"
     camera_info_url: "package://golfcart_sensor_kit_launch/config/usb_camera_left_calibration.yaml"
-    frame_id: "usb_camera_left_optical_link"
+    frame_id: "usb_camera_left"
 
     # Image settings
     image_width: 1920
