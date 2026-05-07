@@ -1,7 +1,7 @@
 /**:
   ros__parameters:
     # Camera device configuration
-    video_device: "/dev/v4l/by-path/platform-3610000.usb-usb-0:2.2:1.0-video-index0"
+    video_device: "device=/dev/v4l/by-path/platform-tegra-capture-vi-video-index0"
     camera_name: "usb_camera_left"
     camera_info_url: "package://golfcart_sensor_kit_launch/config/usb_camera_left_calibration.yaml"
     frame_id: "usb_camera_left"
@@ -12,7 +12,7 @@
     framerate: 30.0
 
     # GStreamer pipeline for hardware acceleration on Jetson
-    gscam_config: "v4l2src device=/dev/v4l/by-path/platform-3610000.usb-usb-0:2.2:1.0-video-index0 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! nvvidconv ! video/x-raw,format=RGBA ! videoconvert ! video/x-raw,format=RGB"
+    gscam_config: "v4l2src device=/dev/v4l/by-path/platform-tegra-capture-vi-video-index0 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! nvvidconv ! video/x-raw,format=RGBA ! videoconvert ! video/x-raw,format=RGB"
 
     # Camera control parameters
     auto_exposure: true

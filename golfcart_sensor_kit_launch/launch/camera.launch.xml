@@ -1,22 +1,20 @@
 <launch>
   <arg name="launch_driver" default="true"/>
-  <arg name="camera_type" default="left"/>
-  <arg name="camera_model" default="usb"/>
+  <!--
   <arg name="enable_stereo_output" default="false" description="Enable left/right stereo output (for Isaac SLAM)"/>
+  -->
   <arg name="use_left_camera" default="true"/>
   <arg name="use_right_camera" default="true"/>
   <arg name="use_rear_camera" default="true"/>
 
   <!-- USB Camera Device Arguments -->
   <!-- Might need to swap the orders -->
-  <!--
-  <arg name="rear_camera_device" default="/dev/v4l/by-id/usb-Ability_GMSL2-USB3.0_Conversion_Kit_C1-Master-video-index2"/>
-  -->
-  <arg name="left_camera_device" default="/dev/v4l/by-id/usb-Ability_GMSL2-USB3.0_Conversion_Kit_C1-Master-video-index0"/>
-  <arg name="right_camera_device" default="/dev/v4l/by-id/usb-Ability_GMSL2-USB3.0_Conversion_Kit_C1-Master-video-index1"/>
+  <arg name="rear_camera_device" default="/dev/v4l/by-path/platform-tegra-capture-vi-video-index12"/>
+  <arg name="left_camera_device" default="/dev/v4l/by-path/platform-tegra-capture-vi-video-index0"/>
+  <arg name="right_camera_device" default="/dev/v4l/by-path/platform-tegra-capture-vi-video-index10"/>
 
   <!-- USB Cameras Group -->
-  <group if="$(eval &quot;'$(var camera_model)'=='usb'&quot;)">
+  <group>
 	  <push-ros-namespace namespace="camera"/>
 
 	  <!-- Rear USB Camera -->
