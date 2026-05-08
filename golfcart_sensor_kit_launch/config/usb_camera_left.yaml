@@ -23,7 +23,7 @@
 
     # Image processing
     image_encoding: "yuv422"
-    sync_sink: true
+    sync_sink: false
     preroll: false
     use_gst_timestamps: true
 
