@@ -105,3 +105,77 @@ The earlier `Couldn't parse params file` / `unknown ROS arguments` errors came
 from running in the wrong working directory or a stray invisible character in
 the shell input (e.g. `●` at the start of a pasted command) — not from the
 YAML itself.
+
+## image_transport plugin allowlist
+
+By default `gscam` advertises `image_raw`, `image_raw/compressed`,
+`image_raw/compressedDepth`, and `image_raw/theora` if the matching
+`image_transport_plugins` debs are installed. The compressed/theora plugins
+are *lazy* — they only encode when a subscriber connects — so they add no CPU
+load while idle, but the extra topics clutter `ros2 topic list` and become a
+silent CPU footgun if any tool subscribes to `/compressed`.
+
+Restrict the advertised plugins per-camera in YAML:
+
+```yaml
+camera.image_raw.enable_pub_plugins: ["image_transport/raw"]
+```
+
+### Parameter name caveat
+
+The parameter key is `<publisher_base_topic>.enable_pub_plugins` with `/`
+replaced by `.`. gscam's internal publisher base is `camera/image_raw`
+(visible in the unmapped topic list as `.../camera/image_raw/compressed`),
+so the key is `camera.image_raw.enable_pub_plugins` — *not* a flat
+`enable_pub_plugins`. A flat key parses without error but is silently
+ignored.
+
+Verify with:
+
+```bash
+ros2 param get /sensing/camera/<cam>/usb_camera_<cam> camera.image_raw.enable_pub_plugins
+# → ['image_transport/raw']
+```
+
+## Per-camera publish CPU
+
+At 1920×1280 UYVY @ 30 fps each cam consumes ~25 % of one Cortex-A78AE core
+purely for `raw` publishing (gscam buffer → `sensor_msgs/Image` memcpy + DDS
+serialize/fragment of 147 MB/s). Plugins are not the bulk; the raw path is.
+
+CPU-reduction options if needed:
+
+1. **Drop resolution/fps** in both `gscam_config` caps and the
+   `image_width` / `image_height` / `framerate` rosparams (e.g. 1280×720 @
+   15 fps ≈ 7 % CPU).
+2. **Intra-process / shared memory** — run gscam and the subscriber inside
+   one component container, or switch RMW to Cyclone + iceoryx to skip
+   serialization.
+3. **GPU-side JPEG** — encode with `nvjpegenc` inside `gscam_config` and
+   publish only the compressed topic (requires consumer support).
+
+## appsink stall under publish backpressure
+
+Symptom: one or two of the three gscam nodes log a steady stream of
+`Got data` / `Publishing the image` / `Getting data...` and then freeze on
+`Getting data...` indefinitely. The process stays alive (sleeping at ~1 %
+CPU) and `gst_app_sink_pull_sample` never returns. Standalone
+`gst-launch-1.0 ... ! fpsdisplaysink` on the same device runs cleanly, so it
+is not a v4l2/bandwidth/hardware issue.
+
+Root cause: gscam's appsink has a small bounded queue with `drop=false`.
+Any momentary slowness in the ROS publish path (DDS write, image_transport,
+CPU spike on the publishing thread) fills the appsink, which then
+back-pressures upstream and stalls `v4l2src` permanently. Which camera
+loses the race is non-deterministic.
+
+Fix: insert a leaky queue in `gscam_config` between `v4l2src` and gscam's
+appsink so the capture stage is decoupled from the publish stage:
+
+```yaml
+gscam_config: "v4l2src device=/dev/v4l/by-path/...-index0 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0"
+```
+
+`leaky=downstream` drops the oldest frame when the queue is full instead of
+blocking the source, so a slow publish thread costs a dropped frame rather
+than a permanently dead camera.
