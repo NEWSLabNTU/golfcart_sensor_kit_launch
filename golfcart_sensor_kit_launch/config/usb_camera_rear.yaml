@@ -30,3 +30,4 @@
     # Performance settings
     reopen_on_eof: false
     camera_info_rescale: true
+    camera.image_raw.enable_pub_plugins: ["image_transport/raw"]
