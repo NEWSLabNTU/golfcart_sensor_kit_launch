@@ -110,45 +110,45 @@
     <!-- USB/Tier IV camera -->
     <joint name="camera_left_joint" type="fixed">
         <origin       
-        xyz="${calibration['sensor_kit_base_link']['usb_camera_left']['x']}
-             ${calibration['sensor_kit_base_link']['usb_camera_left']['y']}
-             ${calibration['sensor_kit_base_link']['usb_camera_left']['z']}"
-        rpy="${calibration['sensor_kit_base_link']['usb_camera_left']['roll']}
-             ${calibration['sensor_kit_base_link']['usb_camera_left']['pitch']}
-             ${calibration['sensor_kit_base_link']['usb_camera_left']['yaw']}"
+        xyz="${calibration['sensor_kit_base_link']['camera_left']['x']}
+             ${calibration['sensor_kit_base_link']['camera_left']['y']}
+             ${calibration['sensor_kit_base_link']['camera_left']['z']}"
+        rpy="${calibration['sensor_kit_base_link']['camera_left']['roll']}
+             ${calibration['sensor_kit_base_link']['camera_left']['pitch']}
+             ${calibration['sensor_kit_base_link']['camera_left']['yaw']}"
             />
         <parent link="sensor_kit_base_link"/>
-        <child link="usb_camera_left"/>
+        <child link="camera_left"/>
     </joint>
-    <link name="usb_camera_left"/>
+    <link name="camera_left"/>
 
     <joint name="camera_rear_joint" type="fixed">
         <origin       
-        xyz="${calibration['sensor_kit_base_link']['usb_camera_rear']['x']}
-             ${calibration['sensor_kit_base_link']['usb_camera_rear']['y']}
-             ${calibration['sensor_kit_base_link']['usb_camera_rear']['z']}"
-        rpy="${calibration['sensor_kit_base_link']['usb_camera_rear']['roll']}
-             ${calibration['sensor_kit_base_link']['usb_camera_rear']['pitch']}
-             ${calibration['sensor_kit_base_link']['usb_camera_rear']['yaw']}"
+        xyz="${calibration['sensor_kit_base_link']['camera_rear']['x']}
+             ${calibration['sensor_kit_base_link']['camera_rear']['y']}
+             ${calibration['sensor_kit_base_link']['camera_rear']['z']}"
+        rpy="${calibration['sensor_kit_base_link']['camera_rear']['roll']}
+             ${calibration['sensor_kit_base_link']['camera_rear']['pitch']}
+             ${calibration['sensor_kit_base_link']['camera_rear']['yaw']}"
             />
         <parent link="sensor_kit_base_link"/>
-        <child link="usb_camera_rear"/>
+        <child link="camera_rear"/>
     </joint>
-    <link name="usb_camera_rear"/>
+    <link name="camera_rear"/>
 
     <joint name="camera_right_joint" type="fixed">
         <origin       
-        xyz="${calibration['sensor_kit_base_link']['usb_camera_right']['x']}
-             ${calibration['sensor_kit_base_link']['usb_camera_right']['y']}
-             ${calibration['sensor_kit_base_link']['usb_camera_right']['z']}"
-        rpy="${calibration['sensor_kit_base_link']['usb_camera_right']['roll']}
-             ${calibration['sensor_kit_base_link']['usb_camera_right']['pitch']}
-             ${calibration['sensor_kit_base_link']['usb_camera_right']['yaw']}"
+        xyz="${calibration['sensor_kit_base_link']['camera_right']['x']}
+             ${calibration['sensor_kit_base_link']['camera_right']['y']}
+             ${calibration['sensor_kit_base_link']['camera_right']['z']}"
+        rpy="${calibration['sensor_kit_base_link']['camera_right']['roll']}
+             ${calibration['sensor_kit_base_link']['camera_right']['pitch']}
+             ${calibration['sensor_kit_base_link']['camera_right']['yaw']}"
             />
         <parent link="sensor_kit_base_link"/>
-        <child link="usb_camera_right"/>
+        <child link="camera_right"/>
     </joint>
-    <link name="usb_camera_right"/>
+    <link name="camera_right"/>
 
   </xacro:macro>
 </robot>

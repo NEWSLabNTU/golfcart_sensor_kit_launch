@@ -74,9 +74,9 @@ that physical assignment stays correct regardless of enumeration order.
 
 | YAML                     | by-path symlink                                                  | resolves to   |
 | ------------------------ | ---------------------------------------------------------------- | ------------- |
-| `usb_camera_left.yaml`   | `/dev/v4l/by-path/platform-3610000.usb-usb-0:2.2:1.0-video-index0` | `/dev/video0` |
-| `usb_camera_rear.yaml`   | `/dev/v4l/by-path/platform-3610000.usb-usb-0:2.3:1.0-video-index0` | `/dev/video2` |
-| `usb_camera_right.yaml`  | `/dev/v4l/by-path/platform-3610000.usb-usb-0:2.4:1.0-video-index0` | `/dev/video4` |
+| `camera_left.yaml`   | `/dev/v4l/by-path/platform-3610000.usb-usb-0:2.2:1.0-video-index0` | `/dev/video0` |
+| `camera_rear.yaml`   | `/dev/v4l/by-path/platform-3610000.usb-usb-0:2.3:1.0-video-index0` | `/dev/video2` |
+| `camera_right.yaml`  | `/dev/v4l/by-path/platform-3610000.usb-usb-0:2.4:1.0-video-index0` | `/dev/video4` |
 
 Physical left/right/rear assignment confirmed by viewing each stream.
 
@@ -98,7 +98,7 @@ Run from the repo root (`~/2026-golf-cart`) so the relative path resolves:
 
 ```bash
 ros2 run gscam gscam_node --ros-args \
-  --params-file src/sensor_kit/golfcart_sensor_kit_launch/golfcart_sensor_kit_launch/config/usb_camera_right.yaml
+  --params-file src/sensor_kit/golfcart_sensor_kit_launch/golfcart_sensor_kit_launch/config/camera_right.yaml
 ```
 
 The earlier `Couldn't parse params file` / `unknown ROS arguments` errors came
@@ -133,7 +133,7 @@ ignored.
 Verify with:
 
 ```bash
-ros2 param get /sensing/camera/<cam>/usb_camera_<cam> camera.image_raw.enable_pub_plugins
+ros2 param get /sensing/camera/<cam>/camera_<cam> camera.image_raw.enable_pub_plugins
 # → ['image_transport/raw']
 ```
 

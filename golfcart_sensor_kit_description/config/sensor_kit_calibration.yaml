@@ -10,8 +10,8 @@ sensor_kit_base_link:
     x: 2.55
     y: 0.0
     z: 0.4
-    roll: 0.0
-    pitch: 0.0
+    roll: 3.1415926
+    pitch: -1.5707963
     yaw: 0.0
   imu_link:
     x: -0.67
@@ -27,25 +27,31 @@ sensor_kit_base_link:
     roll: 0.0
     pitch: 0.0
     yaw: 0.0
-  usb_camera_left:
-    x: 0.0
-    y: 0.0
-    z: 0.0
+  camera_front:
+    x: 0.5      # 50cm forward from sensor_kit_base
+    y: 0.0      # centered
+    z: 0.3      # 30cm up
     roll: 0.0
     pitch: 0.0
-    yaw: 0.0
-  usb_camera_right:
-    x: 0.0
-    y: 0.0
-    z: 0.0
+    yaw: 0.0    # facing forward
+  camera_rear:
+    x: -0.5     # 50cm backward from sensor_kit_base
+    y: 0.0      # centered
+    z: 0.3      # 30cm up
     roll: 0.0
     pitch: 0.0
-    yaw: 0.0
-  usb_camera_rear:
-    x: 0.0
-    y: 0.0
-    z: 0.0
+    yaw: 3.14159 # facing backward (180 degrees)
+  camera_left:
+    x: 0.0      # centered front-back
+    y: 0.4      # 40cm to the left
+    z: 0.3      # 30cm up
     roll: 0.0
     pitch: 0.0
-    yaw: 0.0
-
+    yaw: 1.5708 # facing left (90 degrees)
+  camera_right:
+    x: 0.0      # centered front-back
+    y: -0.4     # 40cm to the right
+    z: 0.3      # 30cm up
+    roll: 0.0
+    pitch: 0.0
+    yaw: -1.5708 # facing right (-90 degrees)

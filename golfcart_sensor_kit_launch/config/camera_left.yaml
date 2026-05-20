@@ -2,9 +2,9 @@
   ros__parameters:
     # Camera device configuration
     video_device: "/dev/v4l/by-path/platform-tegra-capture-vi-video-index0"
-    camera_name: "usb_camera_left"
-    camera_info_url: "package://golfcart_sensor_kit_launch/config/usb_camera_left_calibration.yaml"
-    frame_id: "usb_camera_left"
+    camera_name: "camera_left"
+    camera_info_url: "package://golfcart_sensor_kit_launch/config/camera_left_calibration.yaml"
+    frame_id: "camera_left"
 
     # Image settings
     image_width: 1920
@@ -12,7 +12,7 @@
     framerate: 30.0
 
     # GStreamer pipeline for hardware acceleration on Jetson
-    gscam_config: "v4l2src device=/dev/v4l/by-path/platform-tegra-capture-vi-video-index0 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1"
+    gscam_config: "v4l2src device=/dev/v4l/by-path/platform-tegra-capture-vi-video-index0 io-mode=4 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90"
 
     # Camera control parameters
     auto_exposure: true
@@ -22,7 +22,7 @@
     saturation: 128
 
     # Image processing
-    image_encoding: "yuv422"
+    image_encoding: "jpeg"
     sync_sink: false
     preroll: false
     use_gst_timestamps: true
@@ -30,4 +30,4 @@
     # Performance settings
     reopen_on_eof: false
     camera_info_rescale: true
-    camera.image_raw.enable_pub_plugins: ["image_transport/raw"]
+    image_raw.enable_pub_plugins: ["image_transport/compressed"]

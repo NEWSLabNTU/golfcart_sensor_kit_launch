@@ -1,6 +1,6 @@
 image_width: 1920
 image_height: 1280
-camera_name: usb_camera_right
+camera_name: camera_rear
 camera_matrix:
   rows: 3
   cols: 3

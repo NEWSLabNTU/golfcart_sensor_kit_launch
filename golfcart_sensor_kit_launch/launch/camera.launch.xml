@@ -20,9 +20,9 @@
 	  <!-- Rear USB Camera -->
 	  <group if="$(var use_rear_camera)">
 		  <push-ros-namespace namespace="rear"/>
-		  <node pkg="gscam" exec="gscam_node" name="usb_camera_rear" output="screen">
-			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/usb_camera_rear.yaml"/>
-			  <remap from="camera/image_raw" to="image_raw"/>
+		  <node pkg="gscam" exec="gscam_node" name="camera_rear" output="screen">
+			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_rear.yaml"/>
+			  <remap from="camera/image_raw/compressed" to="image_raw/compressed"/>
 			  <remap from="camera/camera_info" to="camera_info"/>
 		  </node>
 	  </group>
@@ -30,9 +30,9 @@
 	  <!-- Left USB Camera -->
 	  <group if="$(var use_left_camera)">
 		  <push-ros-namespace namespace="left"/>
-		  <node pkg="gscam" exec="gscam_node" name="usb_camera_left" output="screen">
-			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/usb_camera_left.yaml"/>
-			  <remap from="camera/image_raw" to="image_raw"/>
+		  <node pkg="gscam" exec="gscam_node" name="camera_left" output="screen">
+			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_left.yaml"/>
+			  <remap from="camera/image_raw/compressed" to="image_raw/compressed"/>
 			  <remap from="camera/camera_info" to="camera_info"/>
 		  </node>
 	  </group>
@@ -40,9 +40,9 @@
 	  <!-- Right USB Camera -->
 	  <group if="$(var use_right_camera)">
 		  <push-ros-namespace namespace="right"/>
-		  <node pkg="gscam" exec="gscam_node" name="usb_camera_right" output="screen">
-			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/usb_camera_right.yaml"/>
-			  <remap from="camera/image_raw" to="image_raw"/>
+		  <node pkg="gscam" exec="gscam_node" name="camera_right" output="screen">
+			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_right.yaml"/>
+			  <remap from="camera/image_raw/compressed" to="image_raw/compressed"/>
 			  <remap from="camera/camera_info" to="camera_info"/>
 		  </node>
 	  </group>
