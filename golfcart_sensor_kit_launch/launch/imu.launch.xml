@@ -6,18 +6,17 @@
   <group>
     <push-ros-namespace namespace="imu"/>
 
-    <!-- TODO: Replace with Tamagawa IMU driver when available -->
-    <arg name="imu_raw_name" default="tamagawa/imu_raw"/>
+    <arg name="imu_raw_name" default="xsens/imu_raw"/>
     <arg name="imu_corrector_param_file" default="$(find-pkg-share individual_params)/config/$(var vehicle_id)/golfcart_sensor_kit/imu_corrector.param.yaml"/>
+    <arg name="xsens_param_file" default="$(find-pkg-share xsens_mti_can_ros_driver)/param/xsens_mti_can_ros_node.yaml"/>
 
-    <!--
     <group>
-      <push-ros-namespace namespace="tamagawa"/>
-      <node pkg="tamagawa_imu_driver" exec="tamagawa_imu_node" name="tamagawa_imu_node" output="screen" if="$(var launch_driver)">
-        <remap from="imu" to="imu_raw"/>
+      <push-ros-namespace namespace="xsens"/>
+      <node pkg="xsens_mti_can_ros_driver" exec="xsens_mti_can_ros_node" name="xsens_mti_can_ros_node" output="screen" if="$(var launch_driver)">
+        <param from="$(var xsens_param_file)"/>
+        <remap from="imu/data" to="imu_raw"/>
       </node>
     </group>
-    -->
 
     <include file="$(find-pkg-share autoware_imu_corrector)/launch/imu_corrector.launch.xml">
       <arg name="input_topic" value="$(var imu_raw_name)"/>
