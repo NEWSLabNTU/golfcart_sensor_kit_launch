@@ -1,16 +1,44 @@
 <launch>
   <arg name="launch_driver" default="true"/>
+  <arg name="vehicle_id" default="$(env VEHICLE_ID default)"/>
 
-  <arg name="navsatfix_topic_name" default="mti/fix"/>
-  <arg name="orientation_topic_name" default="/autoware_orientation"/>
+  <!--
+    Which IMU feeds Autoware.
+
+      xsens - Xsens MTi over CAN, wired to the Advantech. Driver launched here.
+      zed   - the ZED X built-in IMU. No driver launched here: the ZED node runs
+              on the orin out of camera.launch.xml, and this file only points
+              imu_corrector at the topic it already publishes.
+
+    imu_corrector and gyro_bias_estimator run for either source - they are
+    Autoware-side processing, not a driver. See
+    docs/design/zed_camera_integration.md.
+  -->
+  <arg name="imu_source" default="xsens" description="xsens | zed"/>
+
   <group>
     <push-ros-namespace namespace="imu"/>
 
-    <arg name="imu_raw_name" default="xsens/imu_raw"/>
-    <arg name="imu_corrector_param_file" default="$(find-pkg-share individual_params)/config/$(var vehicle_id)/golfcart_sensor_kit/imu_corrector.param.yaml"/>
+    <!--
+      "raw" here means "not yet corrected by Autoware", not "uncalibrated by the
+      vendor" - note that the xsens branch below feeds the driver's own filtered
+      imu/data into it. For the same reason the ZED source uses imu/data and not
+      imu/data_raw: the latter carries the SDK's *_uncalibrated fields, and
+      gyro_bias_estimator can only remove a constant bias, not the scale and
+      misalignment corrections that would be discarded.
+    -->
+    <let name="imu_raw_name" value="xsens/imu_raw"
+         if="$(eval &quot;'$(var imu_source)'=='xsens'&quot;)"/>
+    <let name="imu_raw_name" value="/sensing/camera/zed/imu/data"
+         if="$(eval &quot;'$(var imu_source)'=='zed'&quot;)"/>
+
+    <!-- Offsets and standard deviations are per-device; they do not transfer. -->
+    <let name="imu_corrector_param_file"
+         value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/golfcart_sensor_kit/imu_corrector_$(var imu_source).param.yaml"/>
+
     <arg name="xsens_param_file" default="$(find-pkg-share xsens_mti_can_ros_driver)/param/xsens_mti_can_ros_node.yaml"/>
 
-    <group>
+    <group if="$(eval &quot;'$(var imu_source)'=='xsens'&quot;)">
       <push-ros-namespace namespace="xsens"/>
       <node pkg="xsens_mti_can_ros_driver" exec="xsens_mti_can_ros_node" name="xsens_mti_can_ros_node" output="screen" if="$(var launch_driver)">
         <param from="$(var xsens_param_file)"/>
