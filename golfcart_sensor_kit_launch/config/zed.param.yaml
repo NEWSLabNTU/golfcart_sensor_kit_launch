@@ -1,0 +1,66 @@
+# ZED X overrides for the golf cart.
+#
+# Layered on top of the vendor defaults by zed.launch.xml, in this order:
+#   1. zed_wrapper/config/common_stereo.yaml
+#   2. zed_wrapper/config/<camera_model>.yaml
+#   3. this file
+#
+# See docs/design/zed_camera_integration.md for the reasoning behind each block.
+/**:
+  ros__parameters:
+    video:
+      # Rectified colour RGB only. On a stereo ZED the RGB channel *is* the left
+      # camera: mPubRgb publishes mMatLeft with mLeftCamInfoMsg, stamped
+      # zed_left_camera_frame_optical.
+      publish_rgb: true
+      # Left/right stereo pair. Turn on if visual SLAM is added; nothing
+      # consumes it today and it doubles the image bandwidth off the orin.
+      publish_left_right: false
+      publish_raw: false
+      publish_gray: false
+      publish_stereo: false
+      # BGR 24-bit instead of the default BGRA 32-bit. The alpha channel is
+      # always opaque and no consumer reads it, so it is a quarter of the image
+      # bandwidth wasted on the inter-machine link. Needs SDK >= 5.1; this
+      # vehicle runs 5.2.3.
+      enable_24bit_output: true
+
+    sensors:
+      # imu/data: factory-calibrated, carries orientation. This is what feeds
+      # autoware_imu_corrector when imu_source:=zed.
+      publish_imu: true
+      # imu/data_raw: the SDK's *_uncalibrated fields, no orientation. Autoware
+      # can only estimate a constant bias, so it cannot rebuild the vendor's
+      # scale and misalignment corrections. Not useful here.
+      publish_imu_raw: false
+      # zed_left_camera_frame -> zed_imu_link. Broadcast by the driver,
+      # independent of pos_tracking (publishImuFrameAndTopic is gated only on
+      # this flag). Required for gyro_odometer to rotate the IMU into base_link.
+      publish_imu_tf: true
+      sensors_pub_rate: 100.0
+
+    pos_tracking:
+      # Off. Autoware owns map -> odom (NDT) and odom -> base_link (EKF).
+      #
+      # Disabling this also stops publishCameraTFs(), which would otherwise
+      # broadcast zed_camera_center -> zed_left/right_camera_frame. Those same
+      # two edges come from zed_descr.urdf.xacro via the robot_state_publisher
+      # in zed.launch.xml, so leaving tracking on would give them two
+      # publishers.
+      pos_tracking_enabled: false
+      publish_tf: false
+      publish_map_tf: false
+
+    depth:
+      # Nothing consumes depth or the point cloud, and it is the most expensive
+      # thing the ZED can be asked to compute.
+      depth_mode: 'NONE'
+      # These are NOT implied by depth_mode: NONE. The camera_info publishers
+      # are guarded on publish_depth_map, not on the depth mode, so with only
+      # depth_mode set the driver still ticks
+      #   depth/camera_info
+      #   depth/depth_registered/camera_info
+      # at the full frame rate, carrying the left camera's info for a depth map
+      # that does not exist. Measured 30 Hz on each before turning these off.
+      publish_depth_map: false
+      publish_point_cloud: false

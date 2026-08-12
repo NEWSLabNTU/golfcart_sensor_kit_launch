@@ -1,23 +1,44 @@
 <launch>
-  <arg name="launch_driver" default="true"/>
   <!--
-  <arg name="enable_stereo_output" default="false" description="Enable left/right stereo output (for Isaac SLAM)"/>
+    Single entry point for every camera on the vehicle. The two branches run on
+    different machines: the GMSL cameras on the Advantech (reached through
+    sensing.launch.xml), the ZED X on the orin (included directly by
+    golfcart.launch.yaml, since the sensing subtree is master-only).
+
+    See docs/design/zed_camera_integration.md.
   -->
+  <arg name="launch_driver" default="true"/>
+  <arg name="camera_model" default="gscam" description="gscam | zedx | none"/>
+
   <arg name="use_left_camera" default="true"/>
   <arg name="use_right_camera" default="true"/>
   <arg name="use_rear_camera" default="true"/>
 
-  <!-- USB Camera Device Arguments -->
+  <!-- GMSL Camera Device Arguments -->
   <!-- Might need to swap the orders -->
   <arg name="rear_camera_device" default="/dev/v4l/by-path/platform-tegra-capture-vi-video-index12"/>
   <arg name="left_camera_device" default="/dev/v4l/by-path/platform-tegra-capture-vi-video-index0"/>
   <arg name="right_camera_device" default="/dev/v4l/by-path/platform-tegra-capture-vi-video-index10"/>
 
-  <!-- USB Cameras Group -->
-  <group>
+  <arg name="zed_camera_name" default="zed"/>
+
+  <!--
+    ZED X. No push-ros-namespace in this branch: zed.launch.xml uses absolute
+    namespaces because load_composable_node resolves its target before a push
+    applies. See the header comment in that file.
+  -->
+  <group if="$(eval &quot;'$(var camera_model)'=='zedx'&quot;)">
+    <include file="$(find-pkg-share golfcart_sensor_kit_launch)/launch/zed.launch.xml" if="$(var launch_driver)">
+      <arg name="zed_camera_name" value="$(var zed_camera_name)"/>
+      <arg name="zed_camera_model" value="$(var camera_model)"/>
+    </include>
+  </group>
+
+  <!-- GMSL Cameras Group -->
+  <group if="$(eval &quot;'$(var camera_model)'=='gscam'&quot;)">
 	  <push-ros-namespace namespace="camera"/>
 
-	  <!-- Rear USB Camera -->
+	  <!-- Rear GMSL Camera -->
 	  <group if="$(var use_rear_camera)">
 		  <push-ros-namespace namespace="rear"/>
 		  <node pkg="gscam" exec="gscam_node" name="camera_rear" output="screen">
@@ -27,7 +48,7 @@
 		  </node>
 	  </group>
 
-	  <!-- Left USB Camera -->
+	  <!-- Left GMSL Camera -->
 	  <group if="$(var use_left_camera)">
 		  <push-ros-namespace namespace="left"/>
 		  <node pkg="gscam" exec="gscam_node" name="camera_left" output="screen">
@@ -37,7 +58,7 @@
 		  </node>
 	  </group>
 
-	  <!-- Right USB Camera -->
+	  <!-- Right GMSL Camera -->
 	  <group if="$(var use_right_camera)">
 		  <push-ros-namespace namespace="right"/>
 		  <node pkg="gscam" exec="gscam_node" name="camera_right" output="screen">

@@ -1,0 +1,79 @@
+<launch>
+  <!--
+    ZED X stereo camera driver. Reached from camera.launch.xml with
+    camera_model:=zedx, which on this vehicle runs on the orin (slave) host.
+
+    zed_camera.launch.py is deliberately NOT included: it computes its
+    LoadComposableNodes target as an absolute string before any namespace push is
+    applied, while the container action itself IS pushed, so the two disagree and
+    the component silently never loads. We build the container and load the
+    component ourselves instead, landing topics at /sensing/camera/zed/*.
+
+    For the same reason there is no push-ros-namespace here: both namespaces
+    below are absolute. With a push, the LoadComposableNodes action sits in a
+    nested scope and its wait for the container's load_node service never
+    completes when this file is included from a conditional group (as
+    camera.launch.xml does).
+
+    Operational notes:
+      * The ZED node needs OpenGL hardware acceleration - plain VNC breaks it.
+      * If the GMSL link wedges ("ZEDX#0#0#FROZEN"), recover with
+        `sudo service zed_x_daemon restart; sleep 25`. Restarting nvargus-daemon
+        alone is not sufficient.
+
+    See docs/design/zed_camera_integration.md.
+  -->
+  <arg name="zed_camera_name" default="zed" description="Camera name; prefixes every zed frame and the topic namespace"/>
+  <arg name="zed_camera_model" default="zedx" description="ZED model: zedx, zedxm, zed2i, ..."/>
+  <arg name="camera_ns" default="/sensing/camera" description="Absolute parent namespace"/>
+
+  <!--
+    Parameter layering, last one winning. Everything tunable lives in
+    zed.param.yaml; only camera_name and camera_model are set inline below,
+    because they are also substituted into namespaces and the URDF command.
+  -->
+  <let name="zed_common_config" value="$(find-pkg-share zed_wrapper)/config/common_stereo.yaml"/>
+  <let name="zed_model_config" value="$(find-pkg-share zed_wrapper)/config/$(var zed_camera_model).yaml"/>
+  <let name="zed_override_config" value="$(find-pkg-share golfcart_sensor_kit_launch)/config/zed.param.yaml"/>
+
+  <group>
+    <node_container pkg="rclcpp_components" exec="component_container_isolated"
+                    name="zed_container" namespace="$(var camera_ns)/$(var zed_camera_name)">
+      <param name="use_multi_threaded_executor" value="true"/>
+    </node_container>
+
+    <load_composable_node target="$(var camera_ns)/$(var zed_camera_name)/zed_container">
+      <composable_node pkg="zed_components" plugin="stereolabs::ZedCamera"
+                       name="$(var zed_camera_name)" namespace="$(var camera_ns)">
+        <param from="$(var zed_common_config)"/>
+        <param from="$(var zed_model_config)"/>
+        <param from="$(var zed_override_config)"/>
+        <param name="general.camera_name" value="$(var zed_camera_name)"/>
+        <param name="general.camera_model" value="$(var zed_camera_model)"/>
+
+        <extra_arg name="use_intra_process_comms" value="true"/>
+      </composable_node>
+    </load_composable_node>
+
+    <!--
+      Publishes the camera's rigid internal geometry from the vendor URDF:
+        zed_camera_link -> zed_camera_center -> zed_left/right_camera_frame
+                        -> *_camera_frame_optical
+
+      The driver never publishes these under any configuration, and it consumes
+      zed_camera_center -> zed_camera_link via getCamera2BaseTransform(), so
+      they have to come from somewhere. Using the vendor xacro keeps the numbers
+      out of this repository and ties their lifetime to the driver's.
+
+      The mount point itself, sensor_kit_base_link -> zed_camera_link, is
+      Autoware's: see zed_camera_link in sensor_kit_calibration.yaml.
+    -->
+    <node pkg="robot_state_publisher" exec="robot_state_publisher"
+          name="$(var zed_camera_name)_state_publisher"
+          namespace="$(var camera_ns)/$(var zed_camera_name)">
+      <param name="robot_description"
+             value="$(command 'xacro $(find-pkg-share zed_wrapper)/urdf/zed_descr.urdf.xacro camera_name:=$(var zed_camera_name) camera_model:=$(var zed_camera_model)' 'warn')"/>
+      <remap from="robot_description" to="$(var zed_camera_name)_description"/>
+    </node>
+  </group>
+</launch>
