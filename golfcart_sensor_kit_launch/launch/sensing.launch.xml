@@ -3,6 +3,15 @@
   <arg name="vehicle_mirror_param_file" description="path to the file of vehicle mirror position yaml"/>
   <arg name="pointcloud_container_name" default="pointcloud_container"/>
   <arg name="vehicle_id" default="$(env VEHICLE_ID default)"/>
+  <!--
+    Environment defaults, following the vehicle_id precedent above. This file is
+    reached through tier4_sensing_component.launch.xml and
+    tier4_sensing_launch/sensing.launch.xml, both installed Autoware files that
+    forward a fixed set of arguments, so there is no launch-argument path from
+    golfcart.launch.yaml down to here. An env var is the available channel.
+  -->
+  <arg name="camera_model" default="$(env CAMERA_MODEL gscam)" description="gscam | zedx | none"/>
+  <arg name="imu_source" default="$(env IMU_SOURCE xsens)" description="xsens | zed"/>
 
   <group>
     <!-- LiDAR Driver -->
@@ -15,11 +24,14 @@
     <!-- Camera Driver -->
     <include file="$(find-pkg-share golfcart_sensor_kit_launch)/launch/camera.launch.xml">
       <arg name="launch_driver" value="$(var launch_driver)" />
+      <arg name="camera_model" value="$(var camera_model)"/>
     </include>
-    
+
     <!-- IMU Driver -->
     <include file="$(find-pkg-share golfcart_sensor_kit_launch)/launch/imu.launch.xml">
       <arg name="launch_driver" value="$(var launch_driver)"/>
+      <arg name="vehicle_id" value="$(var vehicle_id)"/>
+      <arg name="imu_source" value="$(var imu_source)"/>
     </include>
 
     <!-- GNSS Driver -->
