@@ -55,3 +55,16 @@ sensor_kit_base_link:
     roll: 0.0
     pitch: 0.0
     yaw: -1.5708 # facing right (-90 degrees)
+  # ZED X mounting point: the threaded screw hole in the camera's bottom face.
+  # Everything below this frame (camera_center, left/right lenses, optical
+  # frames) comes from the vendor URDF via the robot_state_publisher in
+  # zed.launch.xml - do NOT fold the lens offsets in here.
+  #
+  # PLACEHOLDER. Not measured. See docs/roadmaps/2-zed-camera-integration.md.
+  zed_camera_link:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0

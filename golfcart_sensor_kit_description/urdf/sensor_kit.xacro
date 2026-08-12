@@ -150,5 +150,26 @@
     </joint>
     <link name="camera_right"/>
 
+    <!--
+      ZED X mounting point only. The camera's internal geometry
+      (zed_camera_center, the two lens frames, the optical frames) is published
+      by a separate robot_state_publisher in zed.launch.xml, fed the vendor's
+      zed_descr.urdf.xacro. Do not instantiate zed_macro here as well - that
+      would give every one of those edges two publishers.
+    -->
+    <joint name="zed_camera_joint" type="fixed">
+        <origin
+        xyz="${calibration['sensor_kit_base_link']['zed_camera_link']['x']}
+             ${calibration['sensor_kit_base_link']['zed_camera_link']['y']}
+             ${calibration['sensor_kit_base_link']['zed_camera_link']['z']}"
+        rpy="${calibration['sensor_kit_base_link']['zed_camera_link']['roll']}
+             ${calibration['sensor_kit_base_link']['zed_camera_link']['pitch']}
+             ${calibration['sensor_kit_base_link']['zed_camera_link']['yaw']}"
+            />
+        <parent link="sensor_kit_base_link"/>
+        <child link="zed_camera_link"/>
+    </joint>
+    <link name="zed_camera_link"/>
+
   </xacro:macro>
 </robot>
