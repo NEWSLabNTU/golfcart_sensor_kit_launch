@@ -22,8 +22,8 @@ Located in `golfcart_sensor_kit_description/`, this package contains:
 
 The sensor kit provides mounting points and calibration for:
 - LiDAR sensors
-- Cameras (ZED X Mini)
-- IMU (MPU9250)
+- Cameras (three GMSL cameras, one ZED X)
+- IMU (Xsens MTi over CAN, or the ZED X built-in IMU)
 - GNSS receivers
 
 ### 2. Golf Cart Sensor Kit Launch
@@ -43,19 +43,30 @@ Launch files:
 
 #### Camera Sensors
 
-Supported camera models:
-- ZED X Mini stereo camera
+Two camera sets on two machines, selected by `camera_model`:
+- `gscam` — three GMSL cameras (left, right, rear) on the Advantech
+- `zedx` — one ZED X stereo camera on the orin
+- `none` — no cameras
 
 Launch files:
-- `launch/camera.launch.xml`: Launch file for ZED cameras
+- `launch/camera.launch.xml`: single entry point, dispatches on `camera_model`
+- `launch/zed.launch.xml`: ZED X driver, container, and its `robot_state_publisher`
+
+Configuration:
+- `config/camera_{left,right,rear}.yaml`: gscam device and pipeline settings
+- `config/zed.param.yaml`: ZED overrides, layered over the vendor defaults
+
+See [docs/design/zed_camera_integration.md](../../../docs/design/zed_camera_integration.md).
 
 #### IMU Sensors
 
-Supported IMU models:
-- MPU9250 Inertial Measurement Unit
+Two sources, selected by `imu_source`:
+- `xsens` — Xsens MTi over CAN, wired to the Advantech (driver launched here)
+- `zed` — the ZED X built-in IMU (published by the ZED node on the orin)
 
 Launch files:
-- `launch/imu.launch.xml`: Launch file for MPU9250 IMU with bias correction
+- `launch/imu.launch.xml`: source selection plus `imu_corrector` and
+  `gyro_bias_estimator`, which run for either source
 
 #### GNSS Sensors
 
@@ -119,8 +130,28 @@ ros2 launch golfcart_sensor_kit_launch lidar.launch.xml host_ip:=192.168.26.1
 #### Camera Configuration
 
 ```bash
-# Specify camera model
-ros2 launch golfcart_sensor_kit_launch camera.launch.xml camera_model:=zedxm
+# Three GMSL cameras (Advantech)
+ros2 launch golfcart_sensor_kit_launch camera.launch.xml camera_model:=gscam
+
+# ZED X (orin)
+ros2 launch golfcart_sensor_kit_launch camera.launch.xml camera_model:=zedx
+```
+
+#### IMU Configuration
+
+```bash
+# Xsens MTi over CAN (default)
+ros2 launch golfcart_sensor_kit_launch imu.launch.xml imu_source:=xsens
+
+# ZED X built-in IMU - the ZED node must be running on the orin
+ros2 launch golfcart_sensor_kit_launch imu.launch.xml imu_source:=zed
+```
+
+Through the full stack these are reached by environment variable, since the
+Autoware sensing launch chain forwards only a fixed set of arguments:
+
+```bash
+CAMERA_MODEL=gscam IMU_SOURCE=zed just launch
 ```
 
 #### GNSS Configuration
@@ -138,11 +169,16 @@ The sensor kit integrates with Autoware through the following topics:
 - `/lidar/points_raw`: Raw pointcloud data from the LiDAR sensors
 
 ### Camera Topics
-- `/camera/zedxm/rgb/image_rect_color`: Color images from ZED camera
-- `/camera/zedxm/depth/depth_registered`: Depth images from ZED camera
+- `/sensing/camera/{left,right,rear}/image_raw/compressed`: GMSL cameras
+- `/sensing/camera/zed/rgb/color/rect/image`: rectified colour image from the
+  ZED X. On a stereo ZED the RGB channel is the left camera, and the image is
+  stamped `zed_left_camera_frame_optical`
+- `/sensing/camera/zed/rgb/color/rect/camera_info`: matching intrinsics
 
 ### IMU Topics
-- `/sensing/imu/imu_data`: Corrected IMU data for localization
+- `/sensing/camera/zed/imu/data`: ZED X built-in IMU, calibrated, with orientation
+- `/sensing/imu/imu_data`: Corrected IMU data for localization, from whichever
+  source `imu_source` selects
 
 ### GNSS Topics
 - `/sensing/gnss/pose`: GNSS position in map frame
