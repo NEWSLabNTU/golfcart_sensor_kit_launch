@@ -27,10 +27,24 @@
       gyro_bias_estimator can only remove a constant bias, not the scale and
       misalignment corrections that would be discarded.
     -->
-    <let name="imu_raw_name" value="xsens/imu_raw"
-         if="$(eval &quot;'$(var imu_source)'=='xsens'&quot;)"/>
-    <let name="imu_raw_name" value="/sensing/camera/zed/imu/data"
-         if="$(eval &quot;'$(var imu_source)'=='zed'&quot;)"/>
+    <!--
+      One unconditional <let>, not one per source guarded by `if`. A conditional
+      <let> only defines the configuration on the branch that fires, and
+      play_launch's dump pass does not honour those conditions the way `ros2
+      launch` does: it walks on to the includes below, hits $(var imu_raw_name),
+      and dies with
+
+        SubstitutionFailure: launch configuration 'imu_raw_name' does not exist
+
+      before a single node starts. `ros2 launch` runs the same file fine, so the
+      failure only ever appeared through `just launch` / golfcart-launch.service.
+
+      The dict lookup keeps the error loud for an unknown source - it raises
+      KeyError naming the bad value - rather than silently falling back to one of
+      the two devices, whose corrector parameters do not transfer.
+    -->
+    <let name="imu_raw_name"
+         value="$(eval &quot;{'xsens': 'xsens/imu_raw', 'zed': '/sensing/camera/zed/imu/data'}['$(var imu_source)']&quot;)"/>
 
     <!-- Offsets and standard deviations are per-device; they do not transfer. -->
     <let name="imu_corrector_param_file"

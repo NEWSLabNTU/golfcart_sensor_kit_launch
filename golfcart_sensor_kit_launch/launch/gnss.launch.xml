@@ -5,10 +5,23 @@
   <group>
     <push-ros-namespace namespace="gnss"/>
 
-    <!-- Switch topic name -->
-    <let name="navsatfix_topic_name" value="ublox/nav_sat_fix" if="$(eval &quot;'$(var gnss_receiver)'=='ublox'&quot;)"/>
-    <let name="navsatfix_topic_name" value="septentrio/nav_sat_fix" if="$(eval &quot;'$(var gnss_receiver)'=='septentrio'&quot;)"/>
-    <let name="navsatfix_topic_name" value="garmin/fix" if="$(eval &quot;'$(var gnss_receiver)'=='garmin'&quot;)"/>
+    <!--
+      Switch topic name. One unconditional <let>, not one per receiver guarded by
+      `if`: a conditional <let> defines the configuration only on the branch that
+      fires, and play_launch's parser walks on to the consumers below regardless,
+      dying with
+
+        Undefined variable: 'navsatfix_topic_name'
+
+      before any node starts. `ros2 launch` tolerates it, so this only ever broke
+      through `just launch` / golfcart-launch.service. Same fix as imu.launch.xml.
+
+      The dict lookup raises KeyError naming an unknown receiver rather than
+      silently picking one, which would point Autoware at a topic nothing
+      publishes.
+    -->
+    <let name="navsatfix_topic_name"
+         value="$(eval &quot;{'ublox': 'ublox/nav_sat_fix', 'septentrio': 'septentrio/nav_sat_fix', 'garmin': 'garmin/fix'}['$(var gnss_receiver)']&quot;)"/>
     <let name="orientation_topic_name" value="/autoware_orientation"/>
 
     <!-- Ublox Driver -->
