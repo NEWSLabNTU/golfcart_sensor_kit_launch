@@ -21,7 +21,14 @@
 
     <group>
         <push-ros-namespace namespace="falcon"/>
-        <include file="$(find-pkg-share golfcart_sensor_kit_launch)/launch/seyond_start.py">
+        <!-- Guarded like the Velodyne above. Without it the Seyond driver starts
+             even when launch_driver is false, which is exactly when no hardware
+             is meant to be opened: a logging simulation replaying a bag. It then
+             spends the run retrying an HTTP connection to 172.168.1.10 and
+             filling the log with timeouts, while the point cloud it would have
+             produced is coming from the bag anyway. -->
+        <include file="$(find-pkg-share golfcart_sensor_kit_launch)/launch/seyond_start.py"
+                 if="$(var launch_driver)">
           <!-- <arg name="config_path" value="$(find-pkg-share seyond)/config/seyond.param.yaml"/> -->
         </include>
     </group>
