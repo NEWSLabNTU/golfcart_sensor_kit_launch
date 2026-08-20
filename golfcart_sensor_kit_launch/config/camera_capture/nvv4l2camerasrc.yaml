@@ -1,0 +1,30 @@
+# Capture profile: nvv4l2camerasrc, the zero-copy target.
+#
+# NVIDIA's source element for exactly this sensor class. It does not ask for
+# dmabuf, it only does dmabuf: V4L2_MEMORY_DMABUF in importer role, straight into
+# NVMM, so nvvidconv has nothing to import and the CPU never touches a frame.
+#
+# UNVERIFIED against the oToCam stack. NVIDIA verify it against their own V4L2
+# driver; oToCam is a vendor nv_imx390.ko behind a MAX9296, and the binding either
+# works or it does not. There is no way to find out short of a camera --
+# v4l2loopback cannot stand in, because the module contains no dmabuf code.
+#
+# `do-timestamp=true` is not optional: the camera YAMLs set
+# `use_gst_timestamps: true`, so gscam stamps each message from the buffer PTS.
+# Without a PTS that stamp is zero, and a zero stamp reaches the localizer as a
+# frame from 1970 rather than as an error.
+#
+# If it fails to negotiate, fall back to v4l2-dmabuf. scripts/check/camera_pipeline.sh
+# tries both against a real device and says which cleared.
+
+/**/camera_left:
+  ros__parameters:
+    gscam_config: "nvv4l2camerasrc device=/dev/v4l/by-path/platform-tegra-capture-vi-video-index0 do-timestamp=true ! video/x-raw(memory:NVMM),format=UYVY,width=1920,height=1280,interlace-mode=progressive,framerate=30/1 ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0"
+
+/**/camera_right:
+  ros__parameters:
+    gscam_config: "nvv4l2camerasrc device=/dev/v4l/by-path/platform-tegra-capture-vi-video-index10 do-timestamp=true ! video/x-raw(memory:NVMM),format=UYVY,width=1920,height=1280,interlace-mode=progressive,framerate=30/1 ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0"
+
+/**/camera_rear:
+  ros__parameters:
+    gscam_config: "nvv4l2camerasrc device=/dev/v4l/by-path/platform-tegra-capture-vi-video-index12 do-timestamp=true ! video/x-raw(memory:NVMM),format=UYVY,width=1920,height=1280,interlace-mode=progressive,framerate=30/1 ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0"

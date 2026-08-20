@@ -11,8 +11,14 @@
     image_height: 1280
     framerate: 30.0
 
-    # GStreamer pipeline for hardware acceleration on Jetson
-    gscam_config: "v4l2src device=/dev/v4l/by-path/platform-tegra-capture-vi-video-index0 io-mode=4 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90"
+    # The capture pipeline is NOT here. It is the one part that cannot be
+    # settled without the hardware, so it lives in camera_capture/<profile>.yaml
+    # and is selected by CAMERA_CAPTURE_PROFILE. camera.launch.xml loads this
+    # file and then the profile, so the profile supplies gscam_config.
+    #
+    # A bare `ros2 run gscam gscam_node --params-file <this>` will therefore
+    # fail with no pipeline. Pass the profile too:
+    #   --params-file camera_capture/v4l2-dmabuf.yaml
 
     # Camera control parameters
     auto_exposure: true

@@ -1,0 +1,25 @@
+# Capture profile: v4l2src asking the driver for dmabuf. THE DEFAULT.
+#
+# What shipped before profiles existed, unchanged apart from the trailing leaky
+# queue, so switching to profiles is not also a change of capture path.
+#
+# `io-mode=4` is GST_V4L2_IO_DMABUF: v4l2src ASKS the driver to export dmabuf
+# fds. Whether nv_imx390 honours that, and whether nvvidconv then imports without
+# copying, is unmeasured -- so the "one copy at the front, 147 MB/s per camera"
+# figure in docs/roadmaps/2-camera-image-pipeline.md is an upper bound on what
+# `nvv4l2camerasrc` can save here, not a measured cost.
+#
+# Note it does NOT work against v4l2loopback, which has no dmabuf support at all.
+# Use the `sim` profile there; this is not a defect in either.
+
+/**/camera_left:
+  ros__parameters:
+    gscam_config: "v4l2src device=/dev/v4l/by-path/platform-tegra-capture-vi-video-index0 io-mode=4 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0"
+
+/**/camera_right:
+  ros__parameters:
+    gscam_config: "v4l2src device=/dev/v4l/by-path/platform-tegra-capture-vi-video-index10 io-mode=4 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0"
+
+/**/camera_rear:
+  ros__parameters:
+    gscam_config: "v4l2src device=/dev/v4l/by-path/platform-tegra-capture-vi-video-index12 io-mode=4 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0"

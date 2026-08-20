@@ -1,0 +1,26 @@
+# Capture profile: the synthetic cameras, for a box with no hardware attached.
+#
+# Pairs with `just sim cameras`, which loads v4l2loopback and feeds three devices
+# UYVY at the real geometry. With this profile the REAL launch path runs against
+# them -- same nodes, same topics, same encoder, same format string -- so
+# everything downstream of the sensor is exercisable on any Jetson.
+#
+# No `io-mode` here, deliberately. v4l2loopback supports neither dmabuf (4) nor,
+# in the OUTPUT direction the feeders use, rw: `io-mode=rw` on the v4l2sink side
+# leaves the loopback node advertising no format at all, and every consumer then
+# fails with `not-negotiated` -- through gscam, with "Failed to PAUSE stream,
+# check your gstreamer configuration", which sends you to read the wrong file.
+#
+# Device numbers match scripts/sim/cameras.sh BASE_NR=40.
+
+/**/camera_left:
+  ros__parameters:
+    gscam_config: "v4l2src device=/dev/video40 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0"
+
+/**/camera_right:
+  ros__parameters:
+    gscam_config: "v4l2src device=/dev/video41 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0"
+
+/**/camera_rear:
+  ros__parameters:
+    gscam_config: "v4l2src device=/dev/video42 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0"

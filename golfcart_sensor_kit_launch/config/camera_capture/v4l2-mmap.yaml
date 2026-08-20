@@ -1,0 +1,21 @@
+# Capture profile: v4l2src with mmap. The fallback that definitely copies.
+#
+# `io-mode=2` is GST_V4L2_IO_MMAP: a plain system-memory buffer, which nvvidconv
+# then imports into NVMM -- 4.92 MB per frame, 147 MB/s per camera, 442 MB/s
+# across three, before any hardware runs.
+#
+# Here so that "the camera does not stream" and "the zero-copy path does not
+# negotiate" stay separable questions. If this one works and the other two do
+# not, the sensor is fine and the problem is dmabuf.
+
+/**/camera_left:
+  ros__parameters:
+    gscam_config: "v4l2src device=/dev/v4l/by-path/platform-tegra-capture-vi-video-index0 io-mode=2 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0"
+
+/**/camera_right:
+  ros__parameters:
+    gscam_config: "v4l2src device=/dev/v4l/by-path/platform-tegra-capture-vi-video-index10 io-mode=2 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0"
+
+/**/camera_rear:
+  ros__parameters:
+    gscam_config: "v4l2src device=/dev/v4l/by-path/platform-tegra-capture-vi-video-index12 io-mode=2 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0"

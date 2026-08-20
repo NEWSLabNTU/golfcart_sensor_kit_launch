@@ -14,11 +14,26 @@
   <arg name="use_right_camera" default="true"/>
   <arg name="use_rear_camera" default="true"/>
 
-  <!-- GMSL Camera Device Arguments -->
-  <!-- Might need to swap the orders -->
-  <arg name="rear_camera_device" default="/dev/v4l/by-path/platform-tegra-capture-vi-video-index12"/>
-  <arg name="left_camera_device" default="/dev/v4l/by-path/platform-tegra-capture-vi-video-index0"/>
-  <arg name="right_camera_device" default="/dev/v4l/by-path/platform-tegra-capture-vi-video-index10"/>
+  <!--
+    Which capture path the GMSL cameras use: the name of a file in
+    config/camera_capture/. See the README there.
+
+    An ENVIRONMENT variable, not a launch argument, for the same reason
+    camera_model is: the route from golfcart.launch.yaml runs through
+    tier4_sensing_component.launch.xml and tier4_sensing_launch/sensing.launch.xml,
+    installed Autoware files that forward a fixed set of arguments and drop the
+    rest. `capture_profile:=nvv4l2camerasrc` on the command line would look like
+    it worked and do nothing. Set it in config/sensors.conf, or per run:
+
+        CAMERA_CAPTURE_PROFILE=nvv4l2camerasrc just launch
+
+    The default reproduces what shipped before profiles existed.
+
+    The three device paths used to be declared here as rear/left/right_camera_device
+    and were read by nothing; the real paths sat inside the gscam_config strings
+    in the camera YAMLs. They now live in the profile, in one place.
+  -->
+  <arg name="capture_profile" default="$(env CAMERA_CAPTURE_PROFILE v4l2-dmabuf)"/>
 
   <arg name="zed_camera_name" default="zed"/>
 
@@ -43,6 +58,8 @@
 		  <push-ros-namespace namespace="rear"/>
 		  <node pkg="gscam" exec="gscam_node" name="camera_rear" output="screen">
 			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_rear.yaml"/>
+			  <!-- Second, so it wins: this is what supplies gscam_config. -->
+			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_capture/$(var capture_profile).yaml"/>
 			  <remap from="camera/image_raw/compressed" to="image_raw/compressed"/>
 			  <remap from="camera/camera_info" to="camera_info"/>
 		  </node>
@@ -53,6 +70,8 @@
 		  <push-ros-namespace namespace="left"/>
 		  <node pkg="gscam" exec="gscam_node" name="camera_left" output="screen">
 			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_left.yaml"/>
+			  <!-- Second, so it wins: this is what supplies gscam_config. -->
+			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_capture/$(var capture_profile).yaml"/>
 			  <remap from="camera/image_raw/compressed" to="image_raw/compressed"/>
 			  <remap from="camera/camera_info" to="camera_info"/>
 		  </node>
@@ -63,6 +82,8 @@
 		  <push-ros-namespace namespace="right"/>
 		  <node pkg="gscam" exec="gscam_node" name="camera_right" output="screen">
 			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_right.yaml"/>
+			  <!-- Second, so it wins: this is what supplies gscam_config. -->
+			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_capture/$(var capture_profile).yaml"/>
 			  <remap from="camera/image_raw/compressed" to="image_raw/compressed"/>
 			  <remap from="camera/camera_info" to="camera_info"/>
 		  </node>
