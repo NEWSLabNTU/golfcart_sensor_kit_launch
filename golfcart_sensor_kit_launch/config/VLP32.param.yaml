@@ -1,3 +1,29 @@
+# Velodyne VLP-32C, driven by Nebula.
+#
+# READ THIS BEFORE CHANGING rotation_speed OR return_mode.
+#
+# `udp_only: true` (below) disables Nebula's HTTP client. Nebula says so itself:
+#
+#   "UDP-only mode is enabled. Settings checks, synchronization, and
+#    diagnostics publishing are disabled."
+#
+# `setup_sensor` pushes the configuration over that HTTP client, so with
+# udp_only it never runs. rotation_speed and return_mode here therefore do NOT
+# configure the sensor. They record what the sensor is *assumed* to hold; the
+# actual values live in the LiDAR's own EEPROM and are set by hand in the web
+# UI at http://192.168.7.10.
+#
+# Nothing in the stack corrects a mismatch, and nothing reports one either
+# (udp_only also disables the sensor diagnostics). `just check-sensors` reads
+# both values back over HTTP and compares them against this file. Run it after
+# touching either the sensor or these lines.
+#
+# Decoding itself is safe regardless: the decoder reads the return mode from
+# packet byte 1204 rather than trusting this file. What a mismatch costs you is
+# the frame rate and point count you thought you were recording with.
+#
+# setup_sensor is left at true on purpose, so the values become authoritative
+# again the day udp_only is dropped.
 /**:
   ros__parameters:
     host_ip: 192.168.7.1
@@ -17,6 +43,14 @@
     cloud_max_angle: 360
     scan_phase: 0.0
     sensor_model: VLP32
+    # 600 RPM = 10 Hz. NOT applied to the sensor while udp_only is true.
     rotation_speed: 600
+    # Dual roughly doubles points and packet rate against Strongest/Last
+    # (~60k -> ~120k points per frame at 10 Hz), which every downstream stage
+    # pays for. NOT applied to the sensor while udp_only is true.
     return_mode: Dual
+    # Added in 32e92d7 together with the host_ip fix, reason unrecorded.
+    # Dropping this re-enables sensor configuration and diagnostics, but the
+    # HTTP client failing to connect is fatal to the node, so do not drop it
+    # without confirming http://192.168.7.10 answers from the Advantech.
     udp_only: true

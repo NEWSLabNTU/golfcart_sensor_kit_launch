@@ -1,3 +1,25 @@
+# DEAD CONFIG. Nothing loads this file, and nothing can.
+#
+# It is written for the old `diagnostic_aggregator` package, which is not
+# installed in Autoware 1.5.0 at all -- only `autoware_diagnostic_graph_aggregator`
+# is. Every `type:` below names a plugin that does not exist here, and no launch
+# file in this repository passes this path to anything.
+#
+# The live diagnostics are the graph under
+# src/launcher/golfcart_launch/config/system/diagnostics/*.yaml, which uses a
+# different schema (`units:` with `path:` and `diag:`). Edit those, not this.
+#
+# Two further traps if anyone ports the LiDAR entries across:
+#
+#   - `velodyne_connection`, `velodyne_temperature` and `velodyne_rpm` are
+#     published by `autoware_velodyne_monitor`, which this repository never
+#     launches. Porting the analyzers without launching that node buys nothing.
+#   - That node polls the LiDAR's web interface, and so does Nebula's own
+#     monitor, which `udp_only: true` in ../VLP32.param.yaml disables. If the
+#     web interface is why udp_only was set, neither monitor will work either.
+#     `just check-sensors` reports whether it answers.
+#
+# Kept rather than deleted because it is the starting point for that port.
 /**:
   ros__parameters:
     sensing:
