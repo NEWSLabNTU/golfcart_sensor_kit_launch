@@ -33,7 +33,7 @@
     and were read by nothing; the real paths sat inside the gscam_config strings
     in the camera YAMLs. They now live in the profile, in one place.
   -->
-  <arg name="capture_profile" default="$(env CAMERA_CAPTURE_PROFILE v4l2-dmabuf)"/>
+  <arg name="capture_profile" default="$(env CAMERA_CAPTURE_PROFILE nvv4l2camerasrc)"/>
 
   <arg name="zed_camera_name" default="zed"/>
 
