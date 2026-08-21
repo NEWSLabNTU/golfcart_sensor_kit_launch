@@ -10,9 +10,9 @@ sensor_kit_base_link:
     x: 2.55
     y: 0.0
     z: 0.4
-    roll: 3.1415926
-    pitch: -1.5707963
-    yaw: 0.0
+    roll: 3.1415926 # rotate 180 around x axis
+    pitch: -1.7707963 # rotate around y axis
+    yaw: -0.04
   imu_link:
     x: -0.67
     y: 0.03
@@ -62,9 +62,9 @@ sensor_kit_base_link:
   #
   # PLACEHOLDER. Not measured. See docs/roadmaps/2-zed-camera-integration.md.
   zed_camera_link:
-    x: 0.0
+    x: 2.55
     y: 0.0
-    z: 0.0
+    z: 0.32
     roll: 0.0
     pitch: 0.0
     yaw: 0.0
