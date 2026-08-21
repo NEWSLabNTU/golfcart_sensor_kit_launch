@@ -80,8 +80,20 @@ calibration from `camera_info_url` and publishes `camera_info` at the frame
 rate, 30 Hz. An earlier note in `config/recording/master_topics.txt` claiming it
 publishes none was wrong, and the topics are now recorded.
 
-`camera_info_rescale: true` matters if the calibration was taken at a different
-resolution than the stream.
+`camera_info_rescale` is **not a gscam parameter**. It is in the YAMLs and gscam
+neither declares nor reads it; checked against the `ros2` branch of
+ros-drivers/gscam, which has no occurrence of the name. Nothing rescales
+anything: `getCameraInfo()` is published with only the header replaced, so the
+`width`, `height` and `k` in the calibration file go out exactly as written.
+
+That matters for one specific mistake. Change the capture resolution in
+`camera_capture/<profile>.yaml` and forget to recalibrate, and the images get
+bigger while `k` does not; every pose computed from them is wrong by the ratio,
+and self-consistently so. The published `width` and `height` are the evidence,
+because they still describe the old size. `golfcart_aruco_detector` compares
+them against the frames it receives and suppresses detections when they
+disagree; see `allow_camera_info_rescale` in
+`golfcart_launch/config/localization/aruco_detector.param.yaml`.
 
 ## Dead parameters
 
