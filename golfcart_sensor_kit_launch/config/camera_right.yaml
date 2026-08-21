@@ -13,8 +13,8 @@
 
     # The capture pipeline is NOT here. It is the one part that cannot be
     # settled without the hardware, so it lives in camera_capture/<profile>.yaml
-    # and is selected by CAMERA_CAPTURE_PROFILE. camera.launch.xml loads this
-    # file and then the profile, so the profile supplies gscam_config.
+    # and is selected by camera.launch.xml's capture_profile argument. That file
+    # loads this one and then the profile, so the profile supplies gscam_config.
     #
     # A bare `ros2 run gscam gscam_node --params-file <this>` will therefore
     # fail with no pipeline. Pass the profile too:

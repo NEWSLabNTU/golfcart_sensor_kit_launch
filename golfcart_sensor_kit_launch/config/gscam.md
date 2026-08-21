@@ -20,8 +20,8 @@ recorded here rather than quietly applied.
 | `camera_{left,right,rear}_calibration.yaml` | intrinsics |
 
 `camera.launch.xml` loads the camera file and then the profile, so the profile
-supplies the pipeline. Selected by `CAMERA_CAPTURE_PROFILE`; see
-`camera_capture/README.md` and `config/sensors.conf`.
+supplies the pipeline. Selected by that file's `capture_profile` argument; see
+`camera_capture/README.md`.
 
 A bare `ros2 run gscam gscam_node --params-file camera_left.yaml` therefore has
 no pipeline and will not start. Pass the profile as a second `--params-file`.

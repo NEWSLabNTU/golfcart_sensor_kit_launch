@@ -6,14 +6,21 @@ calibration URL, encoding — lives in `../camera_{left,right,rear}.yaml` and do
 not change between profiles.
 
 The split exists because the capture path is the one part of the pipeline that
-cannot be settled without the hardware, and the hardware is on the vehicle. A
-profile is switched by an environment variable at deploy time, with no edit to a
-tracked file:
+cannot be settled without the hardware, and the hardware is on the vehicle.
+
+The profile is `camera.launch.xml`'s `capture_profile` argument, and only that —
+the `CAMERA_CAPTURE_PROFILE` environment variable it also used to read is gone.
+`just launch` reaches `camera.launch.xml` through two installed Autoware sensing
+files that forward a fixed set of arguments, and `capture_profile` is not one of
+them, so through `just launch` the argument's default is what runs. To try
+another profile, launch this file directly:
 
 ```bash
-CAMERA_CAPTURE_PROFILE=nvv4l2camerasrc just launch     # one run
-# or, to make it stick, set it in config/sensors.conf
+ros2 launch golfcart_sensor_kit_launch camera.launch.xml \
+    camera_model:=gscam capture_profile:=v4l2-mmap
 ```
+
+To change what the vehicle runs, change the default in `camera.launch.xml`.
 
 `camera.launch.xml` loads `../camera_<cam>.yaml` first and then the profile, so
 the profile's `gscam_config` wins. Each profile carries all three cameras, keyed
@@ -29,8 +36,8 @@ by node name:
 
 | profile | source element | use it when |
 |---|---|---|
-| `v4l2-dmabuf` | `v4l2src io-mode=4` | **default.** Byte-for-byte what shipped before profiles existed. |
-| `nvv4l2camerasrc` | `nvv4l2camerasrc` | the zero-copy target. Try it first on the vehicle; it either negotiates or it does not. |
+| `nvv4l2camerasrc` | `nvv4l2camerasrc` | **default.** The zero-copy target: it either negotiates or it does not. |
+| `v4l2-dmabuf` | `v4l2src io-mode=4` | byte-for-byte what shipped before profiles existed. First fallback. |
 | `v4l2-mmap` | `v4l2src io-mode=2` | fallback that definitely copies. Use when the two above fail, to prove the rest of the stack. |
 | `sim` | `v4l2src` on v4l2loopback | no cameras attached. Pairs with `just sim cameras`. |
 
