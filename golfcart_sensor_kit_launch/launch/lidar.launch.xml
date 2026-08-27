@@ -6,6 +6,9 @@
   <arg name="vehicle_mirror_param_file"/>
   <arg name="pointcloud_container_name" default="pointcloud_container"/>
   <arg name="vlp32c_device_ip" default="192.168.7.10"/>
+  <!-- cpu | cuda. Declared with the same env default as the caller so that
+       invoking this file directly behaves the same way. -->
+  <arg name="pointcloud_backend" default="$(env POINTCLOUD_BACKEND cpu)" description="cpu | cuda"/>
 
   <group>
     <push-ros-namespace namespace="lidar"/>
@@ -38,6 +41,7 @@
       <arg name="use_intra_process" value="true"/>
       <arg name="use_multithread" value="true"/>
       <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
+      <arg name="pointcloud_backend" value="$(var pointcloud_backend)"/>
     </include>
   </group>
 </launch>

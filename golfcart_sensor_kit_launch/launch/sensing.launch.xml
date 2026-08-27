@@ -12,6 +12,17 @@
   -->
   <arg name="camera_model" default="$(env CAMERA_MODEL gscam)" description="gscam | zedx | none"/>
   <arg name="imu_source" default="$(env IMU_SOURCE xsens)" description="xsens | zed"/>
+  <!--
+    Which concatenator runs: the CPU one from autoware_pointcloud_preprocessor,
+    or the CUDA one from autoware_cuda_pointcloud_preprocessor. Same parameter
+    file, same node name, same topics either way.
+
+    An environment variable for the reason given above, not because the choice
+    is deployment-wide. Before switching, read
+    docs/research/sensing/lidar-pipeline-starvation.md: concatenation measured
+    12.5 ms against a 510 ms pipeline latency, so this is not where the delay is.
+  -->
+  <arg name="pointcloud_backend" default="$(env POINTCLOUD_BACKEND cpu)" description="cpu | cuda"/>
 
   <group>
     <!-- LiDAR Driver -->
@@ -19,6 +30,7 @@
       <arg name="launch_driver" value="$(var launch_driver)"/>
       <arg name="vehicle_mirror_param_file" value="$(var vehicle_mirror_param_file)"/>
       <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
+      <arg name="pointcloud_backend" value="$(var pointcloud_backend)"/>
     </include>
 
     <!-- Camera Driver -->
