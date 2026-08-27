@@ -4,7 +4,11 @@
     video_device: "/dev/v4l/by-path/platform-tegra-capture-vi-video-index0" # visit camera_capture/ to find the real device mapping
     camera_name: "camera_right"
     camera_info_url: "package://golfcart_sensor_kit_launch/config/camera_right_calibration.yaml"
-    frame_id: "camera_right"
+    # The optical frame, not the mounting frame. REP-103 asks image data to
+    # name the frame its projection is done in -- x right, y down, z along
+    # the view -- and anything that takes this at its word and finds a body
+    # frame comes out rotated ninety degrees.
+    frame_id: "camera_right_optical_link"
 
     # Image settings
     image_width: 1920

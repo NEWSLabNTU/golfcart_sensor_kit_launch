@@ -107,7 +107,22 @@
     </link>
 
 
-    <!-- USB/Tier IV camera -->
+    <!-- TIER IV GMSL cameras.
+
+         Each has two frames. The body frame, camera_NAME, is where the camera
+         is bolted and is what sensor_kit_calibration.yaml measures: x forward,
+         y left, z up, like every other frame on the vehicle. The optical
+         frame, camera_NAME_optical_link, is that same point turned into the
+         convention every projection uses (x right, y down, z along the view
+         direction), which is what REP-103 asks image data to be stamped with
+         and what the drivers now stamp. See camera_NAME.yaml.
+
+         Keeping both matters. A mounting measurement is taken in the body
+         frame and would be unreadable written optically; a projection is done
+         in the optical frame and comes out ninety degrees wrong if handed the
+         body one. The fixed rotation between them carries no calibration and
+         never changes.
+    -->
     <joint name="camera_left_joint" type="fixed">
         <origin       
         xyz="${calibration['sensor_kit_base_link']['camera_left']['x']}
@@ -121,6 +136,13 @@
         <child link="camera_left"/>
     </joint>
     <link name="camera_left"/>
+
+    <joint name="camera_left_optical_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+        <parent link="camera_left"/>
+        <child link="camera_left_optical_link"/>
+    </joint>
+    <link name="camera_left_optical_link"/>
 
     <joint name="camera_rear_joint" type="fixed">
         <origin       
@@ -136,6 +158,13 @@
     </joint>
     <link name="camera_rear"/>
 
+    <joint name="camera_rear_optical_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+        <parent link="camera_rear"/>
+        <child link="camera_rear_optical_link"/>
+    </joint>
+    <link name="camera_rear_optical_link"/>
+
     <joint name="camera_right_joint" type="fixed">
         <origin       
         xyz="${calibration['sensor_kit_base_link']['camera_right']['x']}
@@ -149,6 +178,13 @@
         <child link="camera_right"/>
     </joint>
     <link name="camera_right"/>
+
+    <joint name="camera_right_optical_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+        <parent link="camera_right"/>
+        <child link="camera_right_optical_link"/>
+    </joint>
+    <link name="camera_right_optical_link"/>
 
     <!--
       ZED X mounting point only. The camera's internal geometry
