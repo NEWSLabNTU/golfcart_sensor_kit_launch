@@ -66,8 +66,8 @@ def launch_setup(context, *args, **kwargs):
     if backend not in CONCAT_IMPL:
         raise RuntimeError(
             f"pointcloud_backend must be one of {sorted(CONCAT_IMPL)}, got {backend!r}. "
-            "It is set from the POINTCLOUD_BACKEND environment variable "
-            "(config/sensors.conf), not from a launch argument."
+            "Set it with `just launch pointcloud_backend:=cuda`; golfcart.launch.yaml "
+            "carries it down as the POINTCLOUD_BACKEND environment variable."
         )
     concat_package, concat_plugin = CONCAT_IMPL[backend]
 

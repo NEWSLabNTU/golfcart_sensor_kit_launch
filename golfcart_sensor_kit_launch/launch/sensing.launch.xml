@@ -17,10 +17,14 @@
     or the CUDA one from autoware_cuda_pointcloud_preprocessor. Same parameter
     file, same node name, same topics either way.
 
-    An environment variable for the reason given above, not because the choice
-    is deployment-wide. Before switching, read
-    docs/research/sensing/lidar-pipeline-starvation.md: concatenation measured
-    12.5 ms against a 510 ms pipeline latency, so this is not where the delay is.
+    Reaches us through the environment for the reason given above, but it is NOT
+    a deployment setting and is not in config/sensors.conf. The interface is a
+    launch argument, `just launch pointcloud_backend:=cuda`, which
+    golfcart.launch.yaml set_env's just before the include.
+
+    Before switching, read docs/research/sensing/lidar-pipeline-starvation.md:
+    concatenation measured 12.5 ms against a 510 ms pipeline latency, so this is
+    not where the delay is.
   -->
   <arg name="pointcloud_backend" default="$(env POINTCLOUD_BACKEND cpu)" description="cpu | cuda"/>
 
