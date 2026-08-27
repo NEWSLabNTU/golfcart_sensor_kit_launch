@@ -123,6 +123,10 @@ def make_cpu_preprocessor_nodes(context, ns, raw_topic, vehicle_info, intra_proc
         "input_frame": LaunchConfiguration("base_frame"),
         "output_frame": LaunchConfiguration("base_frame"),
         "negative": True,
+        # Required: the component declares it statically and refuses to
+        # construct without it ("Statically typed parameter
+        # 'processing_time_threshold_sec' must be initialized.").
+        "processing_time_threshold_sec": 0.01,
         "min_x": vehicle_info["min_longitudinal_offset"],
         "max_x": vehicle_info["max_longitudinal_offset"],
         "min_y": vehicle_info["min_lateral_offset"],
