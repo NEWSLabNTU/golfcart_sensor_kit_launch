@@ -10,10 +10,22 @@
     publish_previous_but_late_pointcloud: false
     synchronized_pointcloud_postfix: pointcloud
     input_twist_topic_type: twist
+    # Order is positional: lidar_timestamp_offsets and lidar_timestamp_noise_window
+    # below are indexed against this list, so do not reorder without them.
+    #
+    # The Velodyne arrives PREPROCESSED (cropped, deskewed, outlier-filtered), on
+    # pointcloud_before_sync rather than its raw driver topic. That name is the
+    # same in both `pointcloud_backend` modes; in cuda mode a
+    # `pointcloud_before_sync/cuda` negotiation companion appears beside it and
+    # the CUDA concatenator takes the device pointer instead of the bytes.
+    #
+    # The Falcon arrives RAW, and not by choice: the Seyond driver publishes
+    # PointXYZIRC, with no per-point time field, so nothing can deskew it. See
+    # PASSTHROUGH_LIDARS in pointcloud_preprocessor.launch.py.
     input_topics: [
                     # "/iv_points",
                     "/sensing/lidar/falcon/iv_points",
-                    "/sensing/lidar/vlp32/velodyne_points",
+                    "/sensing/lidar/vlp32/pointcloud_before_sync",
                 ]
     output_frame: $(var base_frame)
     matching_strategy:
