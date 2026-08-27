@@ -82,7 +82,22 @@ def launch_setup(context, *args, **kwargs):
             ("output_info", "concatenated/pointcloud_info"),
         ],
         parameters=[concatenate_and_time_sync_node_param],
-        extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
+        # The CUDA component publishes its cuda_blackboard handles transient_local,
+        # and rclcpp refuses that combination outright:
+        #
+        #   Component constructor threw an exception:
+        #   intraprocess communication allowed only with volatile durability
+        #
+        # It is a hard load failure, not a slowdown, so the backend decides this
+        # rather than the caller. The CPU component keeps intra-process, which is
+        # where its zero-copy inside the container comes from.
+        extra_arguments=[
+            {
+                "use_intra_process_comms": (
+                    "false" if backend == "cuda" else LaunchConfiguration("use_intra_process")
+                )
+            }
+        ],
     )
 
     # load concat or passthrough filter
