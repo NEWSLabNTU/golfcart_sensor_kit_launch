@@ -1,6 +1,22 @@
 <launch>
   <arg name="launch_driver" default="true"/>
-  <arg name="gnss_receiver" default="ublox" description="ublox(default) or septentrio"/>
+  <!--
+    `none` exists because the receiver is not on every host. The u-blox is
+    cabled to the orin (the oToCam overlay took the Advantech's USB ports), but
+    both hosts launched this node, so the Advantech spent every run failing:
+
+      terminate called after throwing an instance of 'std::runtime_error'
+        what():  U-Blox: Could not open serial port :/dev/ublox-gps
+                 open: No such file or directory
+
+    with `respawn="true" respawn_delay="1.0"` restarting it forever. Each
+    restart re-registers the name the orin's node already holds, which is what
+    duplicated_node_checker reports as
+    `Duplicated nodes detected[/sensing/gnss/ublox]` (1131 times in the
+    2026-08-25 observable run). Set GNSS_RECEIVER=none in config/sensors.conf on
+    the host without the receiver.
+  -->
+  <arg name="gnss_receiver" default="$(env GNSS_RECEIVER ublox)" description="ublox(default) | septentrio | garmin | none"/>
 
   <group>
     <push-ros-namespace namespace="gnss"/>
@@ -21,7 +37,7 @@
       publishes.
     -->
     <let name="navsatfix_topic_name"
-         value="$(eval &quot;{'ublox': 'ublox/nav_sat_fix', 'septentrio': 'septentrio/nav_sat_fix', 'garmin': 'garmin/fix'}['$(var gnss_receiver)']&quot;)"/>
+         value="$(eval &quot;{'ublox': 'ublox/nav_sat_fix', 'septentrio': 'septentrio/nav_sat_fix', 'garmin': 'garmin/fix', 'none': 'ublox/nav_sat_fix'}['$(var gnss_receiver)']&quot;)"/>
     <let name="orientation_topic_name" value="/autoware_orientation"/>
 
     <!-- Ublox Driver -->

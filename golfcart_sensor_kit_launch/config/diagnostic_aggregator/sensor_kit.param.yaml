@@ -1,9 +1,15 @@
 # DEAD CONFIG. Nothing loads this file, and nothing can.
 #
-# It is written for the old `diagnostic_aggregator` package, which is not
-# installed in Autoware 1.5.0 at all -- only `autoware_diagnostic_graph_aggregator`
-# is. Every `type:` below names a plugin that does not exist here, and no launch
-# file in this repository passes this path to anything.
+# It is written for the `diagnostic_aggregator` package, and no launch file in
+# this repository passes this path to anything.
+#
+# An earlier version of this comment said that package "is not installed in
+# Autoware 1.5.0 at all" and that every `type:` below names a plugin that does
+# not exist. That is FALSE and was checked on 2026-08-26:
+# /opt/ros/humble/share/diagnostic_aggregator is present, and it does provide
+# GenericAnalyzer and AnalyzerGroup. The file is dead because Autoware chose a
+# different aggregator, not because the package is missing. The distinction
+# matters to anyone deciding whether this config could be revived.
 #
 # The live diagnostics are the graph under
 # src/launcher/golfcart_launch/config/system/diagnostics/*.yaml, which uses a
