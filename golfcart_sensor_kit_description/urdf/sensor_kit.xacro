@@ -109,9 +109,17 @@
 
     <!-- TIER IV GMSL cameras.
 
+         WARNING, never write a colon followed by a space inside a comment in
+         this file. Comments survive xacro expansion into robot_description,
+         ROS 2 launch YAML-parses parameter values, and a colon-space makes
+         the whole URDF fail safe_load. The failure is remote from the cause.
+         You get "mapping values are not allowed here", the stack never
+         publishes /localization/initialize, and just ntu-test reports that
+         the stack never came up, with nothing pointing at a comment.
+
          Each has two frames. The body frame, camera_NAME, is where the camera
-         is bolted and is what sensor_kit_calibration.yaml measures: x forward,
-         y left, z up, like every other frame on the vehicle. The optical
+         is bolted, and is what sensor_kit_calibration.yaml measures, namely
+         x forward, y left, z up, like every other frame on the vehicle. The optical
          frame, camera_NAME_optical_link, is that same point turned into the
          convention every projection uses (x right, y down, z along the view
          direction), which is what REP-103 asks image data to be stamped with
