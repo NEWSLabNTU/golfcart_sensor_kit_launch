@@ -291,7 +291,7 @@ def generate_launch_description():
     add_launch_arg("use_intra_process", "False")
     add_launch_arg("pointcloud_container_name", "pointcloud_container")
     add_launch_arg("use_concat_filter", "True")
-    add_launch_arg("pointcloud_backend", "cpu")
+    add_launch_arg("pointcloud_backend", "cuda")
     add_launch_arg(
         "concatenate_and_time_sync_node_param_path",
         os.path.join(kit, "config", "concatenate_and_time_sync_node.param.yaml"),

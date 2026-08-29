@@ -26,7 +26,7 @@
     concatenation measured 12.5 ms against a 510 ms pipeline latency, so this is
     not where the delay is.
   -->
-  <arg name="pointcloud_backend" default="$(env POINTCLOUD_BACKEND cpu)" description="cpu | cuda"/>
+  <arg name="pointcloud_backend" default="$(env POINTCLOUD_BACKEND cuda)" description="cpu | cuda"/>
 
   <group>
     <!-- LiDAR Driver -->
