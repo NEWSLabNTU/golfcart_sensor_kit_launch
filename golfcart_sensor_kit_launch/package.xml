@@ -17,6 +17,7 @@
   <exec_depend>gscam</exec_depend>
   <exec_depend>nmea_navsat_driver</exec_depend>
   <exec_depend>innovusion</exec_depend>
+  <exec_depend>xsens_mti_can_ros_driver</exec_depend>
 
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>ament_lint_auto</test_depend>

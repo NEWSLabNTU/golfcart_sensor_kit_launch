@@ -50,7 +50,14 @@
     <let name="imu_corrector_param_file"
          value="$(find-pkg-share individual_params)/config/$(var vehicle_id)/golfcart_sensor_kit/imu_corrector_$(var imu_source).param.yaml"/>
 
-    <arg name="xsens_param_file" default="$(find-pkg-share xsens_mti_can_ros_driver)/param/xsens_mti_can_ros_node.yaml"/>
+    <!--
+      Our parameters, not the driver's. The two values that differ from its
+      shipped file - start_frame_id and time_option - describe this MTi's MT
+      Manager output configuration, so they belong to the sensor kit; keeping
+      them upstream left the submodule dirty on every checkout.
+    -->
+    <arg name="xsens_param_file"
+         default="$(find-pkg-share golfcart_sensor_kit_launch)/config/xsens_mti_can.param.yaml"/>
 
     <group if="$(eval &quot;'$(var imu_source)'=='xsens'&quot;)">
       <push-ros-namespace namespace="xsens"/>

@@ -1,0 +1,83 @@
+# Xsens MTi over CAN — golf cart overrides.
+#
+# This file replaces the driver's own copy at
+# xsens_mti_can_ros_driver/param/xsens_mti_can_ros_node.yaml, and imu.launch.xml
+# points at this one. It is a full copy, not a patch: the driver merges nothing,
+# so a partial file would drop can_interface, frame_id and every pub_* flag.
+#
+# It lives here because the two values that differ describe *this MTi's* MT
+# Manager output configuration, not driver behaviour. Editing them upstream
+# would make the submodule dirty on every checkout and would be wrong for any
+# other MTi.
+#
+# The top-level key is "/**" and not the node name on purpose. The node runs as
+# /sensing/imu/xsens/xsens_mti_can_ros_node — imu.launch.xml pushes the "imu"
+# and "xsens" namespaces — and a bare "xsens_mti_can_ros_node:" key normalises
+# to /xsens_mti_can_ros_node, which does not match that fully-qualified name.
+# Nothing reports the mismatch: the parameters are silently ignored and the
+# driver runs on its compiled-in defaults, which is a second, independent way to
+# get the "topics advertise but never publish" symptom below.
+/**:
+  ros__parameters:
+    # SocketCAN interface name. Bring it up via config/setup_can0.sh first.
+    can_interface: "can0"
+
+    # By default the start frame ID is 0x05 (XSENS_SAMPLE_TIME_FRAME_ID).
+    # Set this to the smallest CAN ID configured in MT Manager -> Output
+    # Configuration -> CAN mode (the driver dispatches a packet whenever it
+    # sees this ID, so it MUST be the first frame in every sample group).
+    #
+    # This MTi does NOT emit 0x05 (SampleTime) — its configured output is
+    # StatusWord 0x11, RateOfTurn 0x32, Acceleration 0x34, Temperature 0x51,
+    # in that order per sample group. 0x11 is both the smallest and the group
+    # leader, so it is the start frame. With the 0x05 default the driver never
+    # dispatches: topics advertise and publish nothing.
+    start_frame_id: 17  # 0x11 StatusWord
+
+    publisher_queue_size: 5
+
+    # timestamp option:
+    #   "mti_utc"        UTCTime from the MTi (requires GNSS fix)
+    #   "mti_sampletime" UTC anchored at host time, then advanced by SampleTimeFine
+    #   anything else    host clock now()
+    # Make sure "UTC Time" or "Sample Time Fine" is enabled in MT Manager.
+    # If there is no GNSS reception, the MTi will not output 0x07 (UTCTime) over CAN.
+    #
+    # Host clock, because this MTi emits neither 0x07 (UTCTime) nor 0x05
+    # (SampleTime): both device-clock options would silently fall back to the
+    # host clock anyway, once every sample, with a 5 s throttled warning.
+    # Switch back to "mti_utc" once UTC Time is enabled in MT Manager and the
+    # MTi has GNSS reception.
+    time_option: "host"
+
+    # TF transform frame_id (default: imu_link), change for multi-device setups.
+    frame_id: "imu_link"
+
+    # Per-topic publisher enable flags.
+    pub_imu: true
+    pub_quaternion: true
+    pub_mag: true
+    pub_angular_velocity: true
+    pub_acceleration: true
+    pub_free_acceleration: true
+    pub_dq: true
+    pub_dv: true
+    pub_sampletime: true
+    pub_temperature: true
+    pub_pressure: true
+    pub_gnss: false
+    pub_twist: true
+    pub_transform: true
+    pub_positionLLA: true
+    pub_velocity: true
+    pub_status: true
+    pub_nmea: true
+    pub_gnsspose: true
+    pub_utctime: true
+
+    # Sensor standard deviation [x, y, z] (optional). When set, overrides
+    # the covariance matrix on sensor_msgs/Imu and sensor_msgs/MagneticField.
+    # linear_acceleration_stddev: [0.0, 0.0, 0.0]   # [m/s^2]
+    # angular_velocity_stddev:    [0.0, 0.0, 0.0]   # [rad/s]
+    # orientation_stddev:         [0.0, 0.0, 0.0]   # [rad]
+    # magnetic_field_stddev:      [0.0, 0.0, 0.0]   # [Tesla]
