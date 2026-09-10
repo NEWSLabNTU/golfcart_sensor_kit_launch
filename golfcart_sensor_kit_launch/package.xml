@@ -11,13 +11,23 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <exec_depend>autoware_gnss_poser</exec_depend>
-  <exec_depend>pointcloud_preprocessor</exec_depend>
+  <exec_depend>autoware_pointcloud_preprocessor</exec_depend>
   <exec_depend>topic_tools</exec_depend>
   <exec_depend>ublox_gps</exec_depend>
-  <exec_depend>gscam</exec_depend>
   <exec_depend>nmea_navsat_driver</exec_depend>
-  <exec_depend>innovusion</exec_depend>
+  <exec_depend>seyond</exec_depend>
   <exec_depend>xsens_mti_can_ros_driver</exec_depend>
+
+  <!-- gscam bridges GStreamer into ROS but depends only on the GStreamer
+       core and base libraries, not on the plugin packages a real camera
+       pipeline loads at runtime. Declaring them here is what lets rosdep
+       install the camera stack, so setup needs no step of its own for it. -->
+  <exec_depend>gscam</exec_depend>
+  <exec_depend>gstreamer1.0-plugins-base</exec_depend>
+  <exec_depend>gstreamer1.0-plugins-good</exec_depend>
+  <exec_depend>gstreamer1.0-plugins-bad</exec_depend>
+  <exec_depend>gstreamer1.0-plugins-ugly</exec_depend>
+  <exec_depend>gstreamer1.0-tools</exec_depend>
 
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>ament_lint_auto</test_depend>
