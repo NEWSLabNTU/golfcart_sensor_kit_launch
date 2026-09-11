@@ -72,14 +72,25 @@ PREPROCESSED_LIDARS = [("vlp32", "velodyne_points")]
 
 # LiDARs that reach the concatenator untouched, as (namespace, raw topic).
 #
-# The Seyond Falcon, and NOT by choice. `seyond_ros_driver` registers
-# `PointXYZIRC`: x, y, z, intensity, return_type, ring. No azimuth, no
-# elevation, no distance, no per-point time. Without a per-point time offset a
-# cloud cannot be deskewed by anything, CPU or GPU, so this branch is not merely
-# un-accelerated, it is uncorrectable until the driver emits `PointXYZIRCAEDT`.
+# The Seyond Falcon. This used to be forced: `seyond_ros_driver` registered
+# `PointXYZIRC` -- x, y, z, intensity, return_type, ring -- and without a
+# per-point time offset a cloud cannot be deskewed by anything, CPU or GPU, so
+# the branch was not merely un-accelerated but uncorrectable.
 #
-# It still concatenates. The CUDA concatenator accepts a plain `PointCloud2`
-# beside a negotiated one and uploads it.
+# THAT CONSTRAINT IS GONE. The driver publishes `PointXYZIRCAEDT` from the 1.5.0
+# branch onwards (built with the default POINT_TYPE), so the Falcon could move
+# into PREPROCESSED_LIDARS above and be deskewed like the Velodyne.
+#
+# It has not been moved here, because that is a measurement rather than an edit:
+# it changes what `concatenate_and_time_sync_node.param.yaml` must list (the
+# Falcon would arrive on `pointcloud_before_sync`, not its raw topic), and the
+# concatenator's timing on this vehicle is already understood to be sensitive --
+# see docs/research/performance/indoor-replay-bottlenecks.md, where a silent
+# second LiDAR halved the output rate through `timeout_sec` alone. Do it against
+# a bag with both sensors live, and check the rate before and after.
+#
+# It still concatenates as it is. The CUDA concatenator accepts a plain
+# `PointCloud2` beside a negotiated one and uploads it.
 PASSTHROUGH_LIDARS = [("falcon", "iv_points")]
 
 # Output of the preprocessing stage, per LiDAR namespace. Deliberately the same
