@@ -3,7 +3,25 @@
     debug_mode: true
     rosbag_length: 10.0
     maximum_queue_size: 5
-    timeout_sec: 0.2
+    # How long a collector waits for the rest of its pair before publishing
+    # what it has. It must stay BELOW the 100 ms scan period, and 0.2 was above
+    # it: a collector opened by one sensor waited 200 ms, published, and the
+    # scan that arrived during the wait was dropped
+    # (publish_previous_but_late_pointcloud is false). Measured on the basement
+    # replay, where the Falcon topic is absent, the output ran at 4.47 Hz
+    # against a 10 Hz input and every cloud arrived 190 ms after its own stamp.
+    # At 0.05 the same replay holds 10.00 Hz. The value it replaces was a
+    # placeholder, committed as one in 217719a.
+    #
+    # The trade this makes, on the vehicle where both LiDARs are present: a
+    # Falcon cloud later than 50 ms now yields a Velodyne-only concatenation
+    # instead of a dropped scan. That is the right way round for localization,
+    # which would rather have one sensor on time than two late, but it assumes
+    # the two sensors arrive within 50 ms of each other. Measure that offset on
+    # the cart and raise this if it is larger; anything below 0.1 keeps the
+    # full rate. lidar_timestamp_noise_window below is a separate mechanism
+    # (timestamp matching, not waiting) and is unchanged.
+    timeout_sec: 0.05
     is_motion_compensated: true
     publish_synchronized_pointcloud: true
     keep_input_frame_in_synchronized_pointcloud: true
