@@ -16,7 +16,7 @@
     2026-08-25 observable run). Set GNSS_RECEIVER=none in config/sensors.conf on
     the host without the receiver.
   -->
-  <arg name="gnss_receiver" default="$(env GNSS_RECEIVER ublox)" description="ublox(default) | septentrio | garmin | none"/>
+  <arg name="gnss_receiver" default="$(env GNSS_RECEIVER ublox)" description="ublox(default) | septentrio | none"/>
 
   <group>
     <push-ros-namespace namespace="gnss"/>
@@ -37,7 +37,7 @@
       publishes.
     -->
     <let name="navsatfix_topic_name"
-         value="$(eval &quot;{'ublox': 'ublox/nav_sat_fix', 'septentrio': 'septentrio/nav_sat_fix', 'garmin': 'garmin/fix', 'none': 'ublox/nav_sat_fix'}['$(var gnss_receiver)']&quot;)"/>
+         value="$(eval &quot;{'ublox': 'ublox/nav_sat_fix', 'septentrio': 'septentrio/nav_sat_fix', 'none': 'ublox/nav_sat_fix'}['$(var gnss_receiver)']&quot;)"/>
     <let name="orientation_topic_name" value="/autoware_orientation"/>
 
     <!-- Ublox Driver -->
@@ -51,19 +51,6 @@
     <!-- Septentrio GNSS Driver -->
     <group if="$(eval &quot;'$(var launch_driver)' and '$(var gnss_receiver)'=='septentrio'&quot;)">
       <include file="$(find-pkg-share septentrio_gnss_driver)/launch/mosaic_x5_rover.launch.xml"/>
-    </group>
-
-    <!-- Garmin GNSS Driver -->
-    <group if="$(eval &quot;'$(var launch_driver)' and '$(var gnss_receiver)'=='garmin'&quot;)">
-      <!-- <include file="$(find-pkg-share gpsd_client)/launch/gpsd_client-launch.py"/> -->
-      <push-ros-namespace namespace="garmin"/>
-      <node pkg="nmea_reader" exec="nmea_reader" name="new_serial_reader">
-        <param name="port" value="/dev/ttyUSB0"/>
-        <param name="baud" value="9600"/>
-        <param name="frame_id" value="gps"/>
-      </node>
-      <node pkg="nmea_navsat_driver" exec="nmea_topic_driver" name="nmea_topic_driver">
-      </node>
     </group>
 
     <!-- NavSatFix to MGRS Pose -->

@@ -71,7 +71,6 @@ Launch files:
 #### GNSS Sensors
 
 Supported GNSS receivers:
-- Garmin GPS (default)
 - u-blox GPS
 - Septentrio GNSS
 
@@ -157,7 +156,7 @@ CAMERA_MODEL=gscam IMU_SOURCE=zed just launch
 #### GNSS Configuration
 
 ```bash
-# Specify GNSS receiver type (garmin, ublox, or septentrio)
+# Specify GNSS receiver type (ublox or septentrio)
 ros2 launch golfcart_sensor_kit_launch gnss.launch.xml gnss_receiver:=ublox
 ```
 
