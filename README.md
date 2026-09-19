@@ -169,7 +169,7 @@ The sensor kit integrates with Autoware through the following topics:
 
 ### Camera Topics
 - `/sensing/camera/{left,right,rear}/image_raw/compressed`: GMSL cameras
-- `/sensing/camera/zed/rgb/color/rect/image`: rectified colour image from the
+- `/sensing/camera/zed/rgb/color/rect/image`: rectified color image from the
   ZED X. On a stereo ZED the RGB channel is the left camera, and the image is
   stamped `zed_left_camera_frame_optical`
 - `/sensing/camera/zed/rgb/color/rect/camera_info`: matching intrinsics
