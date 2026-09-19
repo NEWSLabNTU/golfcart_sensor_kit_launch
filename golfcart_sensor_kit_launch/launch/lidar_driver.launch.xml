@@ -1,0 +1,67 @@
+<launch>
+  <!--
+    LiDAR drivers only - Velodyne VLP-32C (nebula) and Seyond Falcon. Point
+    cloud preprocessing and concatenation are a separate stage that stays on
+    the master regardless of which host runs these drivers; see
+    lidar.launch.xml and pointcloud_preprocessor.launch.py.
+
+    This is the single entry point for both drivers, on whichever host runs
+    them - selected by the environment variable LIDAR_HOST
+    (config/sensors.conf), the same mechanism as IMU_SOURCE and CAMERA_MODEL,
+    and for the same reason: the installed tier4 sensing launch files forward
+    a fixed set of arguments and drop the rest.
+
+      - lidar.launch.xml includes this file when LIDAR_HOST is "master" (the
+        default), already inside the namespace tier4_sensing_launch pushed.
+      - golfcart.launch.yaml's is_orin group includes this file directly when
+        LIDAR_HOST is "orin" - the same shorter path camera.launch.xml's
+        zedx branch already takes, because the sensing subtree it would
+        otherwise hang off is master-only and there is nothing above it to
+        push a namespace.
+
+    The namespace below is pushed as an ABSOLUTE path rather than the usual
+    relative "lidar", so the topics land at /sensing/lidar/vlp32/... and
+    /sensing/lidar/falcon/... the same way whichever path reached this file.
+    push_ros_namespace.py (launch_ros.actions.PushRosNamespace) resets to the
+    given namespace outright when it starts with a slash, rather than nesting
+    under whatever was pushed before it - so this is safe to include from
+    inside lidar.launch.xml's own "lidar" push (master) or from no push at
+    all (the orin's direct include).
+  -->
+  <arg name="launch_driver" default="true"/>
+  <!--
+    Declared for continuity with lidar.launch.xml, which has carried this
+    arg unused since before this file existed - VLP32.param.yaml's sensor_ip
+    is a static value, not a substitution, so nothing threads this through
+    today. See the TODO at host_ip in VLP32.param.yaml for what moving the
+    Velodyne here actually requires.
+  -->
+  <arg name="vlp32c_device_ip" default="192.168.7.10"/>
+
+  <group>
+    <push-ros-namespace namespace="/sensing/lidar"/>
+
+    <group>
+        <push-ros-namespace namespace="vlp32"/>
+        <include file="$(find-pkg-share nebula_ros)/launch/velodyne_launch_all_hw.xml" if="$(var launch_driver)">
+          <arg name="sensor_model" value="VLP32" />
+          <arg name="launch_hw" value="true" />
+          <arg name="config_file" value="$(find-pkg-share golfcart_sensor_kit_launch)/config/VLP32.param.yaml" />
+        </include>
+    </group>
+
+    <group>
+        <push-ros-namespace namespace="falcon"/>
+        <!-- Guarded like the Velodyne above. Without it the Seyond driver starts
+             even when launch_driver is false, which is exactly when no hardware
+             is meant to be opened: a logging simulation replaying a bag. It then
+             spends the run retrying an HTTP connection to 172.168.1.10 and
+             filling the log with timeouts, while the point cloud it would have
+             produced is coming from the bag anyway. -->
+        <include file="$(find-pkg-share golfcart_sensor_kit_launch)/launch/seyond_start.py"
+                 if="$(var launch_driver)">
+          <!-- <arg name="config_path" value="$(find-pkg-share seyond)/config/seyond.param.yaml"/> -->
+        </include>
+    </group>
+  </group>
+</launch>
