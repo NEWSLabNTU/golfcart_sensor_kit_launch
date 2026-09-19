@@ -13,7 +13,14 @@
   <exec_depend>autoware_gnss_poser</exec_depend>
   <exec_depend>autoware_pointcloud_preprocessor</exec_depend>
   <exec_depend>topic_tools</exec_depend>
+  <!-- Both come from the ublox_f9p_ws submodule under
+       src/sensor_component/external, built with the workspace: ublox_gps is
+       a fork that takes RTCM as mavros_msgs/RTCM, which is what that
+       workspace's ntrip_client publishes. rosdep must not install
+       ros-humble-ublox-gps for this key, and does not while the package is in
+       the source tree (the ros-deps setup step passes ignore-src). -->
   <exec_depend>ublox_gps</exec_depend>
+  <exec_depend>ntrip_client</exec_depend>
   <exec_depend>nmea_navsat_driver</exec_depend>
   <exec_depend>seyond</exec_depend>
   <exec_depend>xsens_mti_can_ros_driver</exec_depend>

@@ -18,6 +18,26 @@
   -->
   <arg name="gnss_receiver" default="$(env GNSS_RECEIVER ublox)" description="ublox(default) | septentrio | none"/>
 
+  <!--
+    RTK corrections over NTRIP, u-blox only. Read from the environment for the
+    same reason gnss_receiver is: the sensing chain between golfcart.launch.yaml
+    and this file is two installed Autoware files that forward a fixed argument
+    list, so `use_ntrip:=true` reaches golfcart_autoware.launch.xml and stops.
+    golfcart.launch.yaml set_env's USE_NTRIP from its own use_ntrip argument
+    immediately before the include, the way it does POINTCLOUD_BACKEND, so the
+    argument works from the command line; nothing needs USE_NTRIP in a shell.
+
+    The caster (host, port, mountpoint) is in config/ntrip_client.param.yaml
+    here. The account is not: every e-GNSS mountpoint authenticates, and the
+    credentials belong to the lab, so they live in the parent repo's gitignored
+    config/ntrip.param.yaml, which scripts/env.sh exports as NTRIP_PARAM_FILE
+    when it exists. Without it the kit's own file loads, with empty username and
+    password, and the client exits on start naming the parameter it is missing.
+  -->
+  <arg name="use_ntrip" default="$(env USE_NTRIP false)" description="launch the NTRIP client and feed RTCM to the receiver"/>
+  <arg name="ntrip_param_file"
+       default="$(env NTRIP_PARAM_FILE $(find-pkg-share golfcart_sensor_kit_launch)/config/ntrip_client.param.yaml)"/>
+
   <group>
     <push-ros-namespace namespace="gnss"/>
 
@@ -40,16 +60,64 @@
          value="$(eval &quot;{'ublox': 'ublox/nav_sat_fix', 'septentrio': 'septentrio/nav_sat_fix', 'none': 'ublox/nav_sat_fix'}['$(var gnss_receiver)']&quot;)"/>
     <let name="orientation_topic_name" value="/autoware_orientation"/>
 
-    <!-- Ublox Driver -->
+    <!--
+      u-blox ZED-F9P. `ublox_gps` is built from source, from the ublox_f9p_ws
+      submodule under src/sensor_component/external, not from the apt
+      ros-humble-ublox-gps that used to satisfy the same package name. The two
+      differ in one thing that matters here: the fork takes its RTCM input as
+      mavros_msgs/RTCM, which is what the ntrip_client in the same workspace
+      publishes, where the apt build wants rtcm_msgs/Message.
+
+      Topic layout, all relative so the tree can be re-namespaced:
+
+        ~/fix        to  ~/nav_sat_fix         what gnss_poser reads
+        nmea         to  ~/nmea_sentence       GGA and friends; the NTRIP client
+                                               uplinks these, the VRS caster
+                                               needs them to place its base
+        /rtcm        to  ntrip/rtcm            the driver subscribes to an
+                                               ABSOLUTE /rtcm in code, so the
+                                               remap has to name it absolutely
+        rxmrtcm      to  ~/rxmrtcm             UBX-RXM-RTCM: which corrections
+                                               the receiver accepted
+
+      Those are the names golfcart_system_monitor's monitor_topics.yaml already
+      lists, so with use_ntrip on they stop being placeholders.
+    -->
     <group if="$(eval &quot;'$(var gnss_receiver)'=='ublox'&quot;)">
       <node pkg="ublox_gps" name="ublox" exec="ublox_gps_node" if="$(var launch_driver)" respawn="true" respawn_delay="1.0">
         <remap from="~/fix" to="~/nav_sat_fix"/>
+        <remap from="nmea" to="~/nmea_sentence"/>
+        <remap from="/rtcm" to="ntrip/rtcm"/>
+        <remap from="rxmrtcm" to="~/rxmrtcm"/>
         <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/ublox_f9p.yaml"/>
+      </node>
+
+      <!--
+        NTRIP client, from the same workspace (LORD-MicroStrain's, vendored).
+        Same namespace as the driver so both remaps stay relative: it publishes
+        `rtcm` and subscribes `nmea`, and both are moved onto the names above.
+
+        respawn is deliberate and slow. A caster that is down, or wrong
+        credentials, makes the node exit after a TCP timeout of up to ~130 s, so
+        a fast respawn would only hammer the caster; a dropped connection on a
+        working account is what the respawn is for.
+      -->
+      <node pkg="ntrip_client" name="ntrip_client" exec="ntrip_ros.py" output="screen"
+            if="$(eval &quot;'$(var launch_driver)'=='true' and '$(var use_ntrip)'=='true'&quot;)"
+            respawn="true" respawn_delay="5.0">
+        <remap from="rtcm" to="ntrip/rtcm"/>
+        <remap from="nmea" to="ublox/nmea_sentence"/>
+        <param from="$(var ntrip_param_file)"/>
       </node>
     </group>
 
-    <!-- Septentrio GNSS Driver -->
-    <group if="$(eval &quot;'$(var launch_driver)' and '$(var gnss_receiver)'=='septentrio'&quot;)">
+    <!--
+      Septentrio GNSS Driver. Both operands are compared, not just the second:
+      `'false' and X` in Python is X, because a non-empty string is truthy, so
+      the previous `'$(var launch_driver)' and ...` launched the driver with
+      launch_driver:=false whenever the receiver was septentrio.
+    -->
+    <group if="$(eval &quot;'$(var launch_driver)'=='true' and '$(var gnss_receiver)'=='septentrio'&quot;)">
       <include file="$(find-pkg-share septentrio_gnss_driver)/launch/mosaic_x5_rover.launch.xml"/>
     </group>
 

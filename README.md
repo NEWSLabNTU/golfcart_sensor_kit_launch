@@ -71,11 +71,18 @@ Launch files:
 #### GNSS Sensors
 
 Supported GNSS receivers:
-- u-blox GPS
+- u-blox ZED-F9P (`ublox_gps`, built from the `ublox_f9p_ws` submodule of the
+  parent repo, not the apt package), optionally with RTK corrections from the
+  `ntrip_client` in the same workspace
 - Septentrio GNSS
 
 Launch files:
 - `launch/gnss.launch.xml`: Launch file for GNSS receivers with coordinate transformation
+
+Config:
+- `config/ublox_f9p.yaml`: the receiver, as a rover (`tmode3: 0`)
+- `config/ntrip_client.param.yaml`: the caster; credentials are not committed
+  and come from the parent repo's `config/ntrip.param.yaml` via `NTRIP_PARAM_FILE`
 
 #### Combined Sensing Launch
 
@@ -158,6 +165,9 @@ CAMERA_MODEL=gscam IMU_SOURCE=zed just launch
 ```bash
 # Specify GNSS receiver type (ublox or septentrio)
 ros2 launch golfcart_sensor_kit_launch gnss.launch.xml gnss_receiver:=ublox
+
+# With RTK corrections over NTRIP (u-blox only; needs NTRIP_PARAM_FILE with credentials)
+ros2 launch golfcart_sensor_kit_launch gnss.launch.xml use_ntrip:=true
 ```
 
 ## Integration with Autoware
@@ -182,6 +192,10 @@ The sensor kit integrates with Autoware through the following topics:
 ### GNSS Topics
 - `/sensing/gnss/pose`: GNSS position in map frame
 - `/sensing/gnss/pose_with_covariance`: GNSS position with uncertainty information
+- `/sensing/gnss/ublox/nav_sat_fix`: the receiver's fix, what `gnss_poser` reads
+- `/sensing/gnss/ublox/nmea_sentence`: NMEA, uplinked to the caster when NTRIP is on
+- `/sensing/gnss/ntrip/rtcm`: corrections from the caster (`mavros_msgs/RTCM`)
+- `/sensing/gnss/ublox/rxmrtcm`: which corrections the receiver accepted
 
 ## Sensor Calibration
 

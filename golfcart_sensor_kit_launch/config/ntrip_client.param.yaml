@@ -1,0 +1,33 @@
+# NTRIP client, launched by launch/gnss.launch.xml when use_ntrip is on.
+#
+# Read by the `ntrip_client` node (LORD-MicroStrain's, vendored into the
+# ublox_f9p_ws submodule). It publishes the caster's RTCM stream as
+# mavros_msgs/RTCM and uplinks the receiver's NMEA sentences to the caster.
+#
+# This file is the CASTER. It is not the ACCOUNT: username and password are
+# empty here on purpose, and with `authenticate: true` the node exits on start
+# naming whichever of the two is missing. The parent repo's gitignored
+# config/ntrip.param.yaml is a complete copy of this file with the credentials
+# filled in; scripts/env.sh exports it as NTRIP_PARAM_FILE when it exists and
+# the launch loads that instead. Start from config/ntrip.param.yaml.example.
+#
+# The mountpoint is the one chosen in ublox_f9p_ws/SETUP_LOG.md, section 8.
+# Every e-GNSS mountpoint is a network VRS that requires the GGA uplink.
+# `GNSS_Taiwan` is RTCM 3.2 (MSM) and corrects GPS, GLONASS, Galileo, BeiDou
+# and QZSS; `Taiwan` is RTCM 3.1 and corrects GPS and GLONASS only, and
+# `Taiwan_RTCM23` can never work because the ZED-F9P has no RTCM 2.x parser.
+#
+# e-GNSS drops ICMP, so test reachability with TCP, not ping:
+#     timeout 5 bash -c 'cat < /dev/null > /dev/tcp/210.241.63.193/81'
+/**:
+  ros__parameters:
+    host: "210.241.63.193"        # e-GNSS Taiwan (NLSC). A bare IP because the
+                                  # service has no stable hostname; RTK2GO does,
+                                  # and the workspace lost a day to a stale
+                                  # RTK2GO IP, so prefer a hostname where one exists.
+    port: 81
+    mountpoint: "GNSS_Taiwan"
+    authenticate: true
+    username: ""
+    password: ""
+    rtcm_frame_id: "gps"

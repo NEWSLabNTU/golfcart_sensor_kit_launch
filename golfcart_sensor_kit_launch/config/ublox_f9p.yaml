@@ -1,18 +1,32 @@
+# u-blox ZED-F9P, rover, as launched by launch/gnss.launch.xml.
+#
+# Read by the `ublox_gps` node built from the ublox_f9p_ws submodule
+# (src/sensor_component/external/ublox_f9p_ws/src/ublox), a fork of
+# KumarRobotics/ublox 2.3.0. The key schema is that driver's; its own
+# ublox_gps/config/zed_f9p.yaml is the reference for names, but not for values.
+# That file is a base-station profile: `tmode3: 1` starts a survey-in and
+# `sv_in.reset: true` restarts it on every launch, and a base generates
+# corrections rather than consuming the NTRIP stream. The 2026-09-17 bring-up in
+# the submodule's SETUP_LOG.md hit exactly that.
+#
+# `/**` and not `ublox_gps_node:`: the node is launched as /sensing/gnss/ublox,
+# so a top-level key naming the executable would match nothing and the driver
+# would silently run on its compiled-in defaults, /dev/ttyACM0 included.
 /**:
   ros__parameters:
     debug: 0
-    device: /dev/ublox-gps
+    device: /dev/ublox-gps        # udev symlink from setup/files/99-ublox-gps.rules
     frame_id: gps
     uart1:
       baudrate: 9600
-    rate: 1.0
+    rate: 1.0                     # the driver warns above 1 Hz on HPG products
     nav_rate: 1
 
-    # Rover mode (disabled time mode — not a base station)
+    # Rover: time mode disabled. Anything else is a base station.
     tmode3: 0
 
-    # Explicit constellation list — F9 firmware v9 uses VALGET/VALSET;
-    # polling UBX-CFG-GNSS can fail if omitted
+    # Explicit constellation list. F9 firmware (v9) is configured over
+    # VALGET/VALSET; polling UBX-CFG-GNSS can fail if this is omitted.
     gnss:
       gps: true
       glonass: true
@@ -22,6 +36,10 @@
     inf:
       all: true
 
+    # `all` also turns on `publish.nmea`, which the NTRIP client depends on:
+    # the e-GNSS VRS casters need a GGA uplink before they stream anything.
+    # It also turns on `publish.rxm.rtcm`, the receiver's own account of which
+    # correction messages it accepted (remapped to ~/rxmrtcm in the launch).
     publish:
       all: true
       aid:
