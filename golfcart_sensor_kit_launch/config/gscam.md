@@ -8,7 +8,7 @@ Rewritten 2026-08-21. The previous version described an
 `platform-3610000.usb-...` USB conversion-kit rig. Neither had been true for a
 while: the cameras are oToCam GMSL units on `tegra-capture-vi`, and the pipeline
 encodes JPEG in hardware with no CPU conversion in it. It was also the source of
-the "one CPU colour conversion per camera" claim, which is why the correction is
+the "one CPU color conversion per camera" claim, which is why the correction is
 recorded here rather than quietly applied.
 
 ## Where things live

@@ -9,7 +9,7 @@
 /**:
   ros__parameters:
     video:
-      # Rectified colour RGB only. On a stereo ZED the RGB channel *is* the left
+      # Rectified color RGB only. On a stereo ZED the RGB channel *is* the left
       # camera: mPubRgb publishes mMatLeft with mLeftCamInfoMsg, stamped
       # zed_left_camera_frame_optical.
       publish_rgb: true
