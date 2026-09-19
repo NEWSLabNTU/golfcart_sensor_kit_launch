@@ -86,6 +86,13 @@ def generate_launch_description():
                 description='aggregate packets num'
             ),
 
+            # TODO(LIDAR_HOST=orin): this is the SENSOR's address, unaffected by
+            # which host runs the driver. Moving the driver to the orin is a
+            # physical/network change instead - the point-to-point cable from
+            # the Falcon to enP5p5s0 has to move to a NIC on the orin, with a
+            # compatible local address there (scripts/hardware/lidar-network/,
+            # MAC-bound, out of scope for this file) - not a value to edit
+            # here. See the same note at seyond.param.yaml's lidar_ip.
             DeclareLaunchArgument(
                 'device_ip',
                 default_value='172.168.1.10',

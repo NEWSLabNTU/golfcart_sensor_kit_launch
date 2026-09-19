@@ -14,6 +14,15 @@ lidars:
       output_topic: iv_points                         #Frame topic
 
       lidar_name: seyond                              #Lidar name
+      # TODO(LIDAR_HOST=orin): lidar_ip is the SENSOR's own address, not the
+      # driver host's, so it does not change when the driver moves. What does
+      # need to change is physical: the Falcon is wired point-to-point to
+      # enP5p5s0 on the master today (docs/multi-machine.md), so moving the
+      # driver means moving that cable to a NIC on the orin and giving it a
+      # compatible local address there — see
+      # scripts/hardware/lidar-network/, MAC-bound and out of scope here, and
+      # seyond_start.py's device_ip default a few lines below this file's
+      # actual (unused today — see the comment there) config_path.
       lidar_ip: 172.168.1.10                          #Lidar ip
       port: 8010                                      #Lidar port
       udp_port: 8010                                  #Udp port

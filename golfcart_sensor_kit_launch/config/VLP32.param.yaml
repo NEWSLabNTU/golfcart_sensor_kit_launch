@@ -34,6 +34,22 @@
 # the frame rate and point count you thought you were recording with.
 /**:
   ros__parameters:
+    # TODO(LIDAR_HOST=orin): host_ip is this DRIVER HOST's own NIC address on
+    # the point-to-point link to the sensor, not the sensor's — see sensor_ip
+    # right below. It is a static value here, not a substitution, so moving
+    # the driver to the orin (config/sensors.conf, LIDAR_HOST=orin) means:
+    #   1. physically moving the cable from the master's enP5p4s0 to a NIC on
+    #      the orin (see scripts/hardware/lidar-network/, which is MAC-bound
+    #      and out of scope for this change — do not guess an address here);
+    #   2. giving that orin NIC 192.168.7.1/24 (or whatever the new link's
+    #      addressing plan says) via the same NetworkManager profile
+    #      mechanism, not by hand;
+    #   3. only then does this value stay correct, since it names "the host
+    #      this file's driver runs on", which becomes the orin.
+    # Nothing in the launch chain threads a launch argument into this file
+    # today (see the vlp32c_device_ip comment in lidar_driver.launch.xml) —
+    # this is a plain hardcoded value that must be edited by hand if it ever
+    # changes, on whichever host is authoritative for it.
     host_ip: 192.168.7.1
     sensor_ip: 192.168.7.10
     data_port: 2368

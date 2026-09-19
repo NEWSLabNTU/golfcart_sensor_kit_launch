@@ -29,7 +29,16 @@
   <arg name="pointcloud_backend" default="$(env POINTCLOUD_BACKEND cuda)" description="cpu | cuda"/>
 
   <group>
-    <!-- LiDAR Driver -->
+    <!--
+      LiDAR. launch_driver here is uniform across lidar/camera/imu/gnss - this
+      file has no way to single one out, since it only forwards what
+      tier4_sensing_launch gave it. lidar.launch.xml applies a second, finer
+      gate of its own: it reads LIDAR_HOST (config/sensors.conf) and only
+      starts the driver pair when this host is the one named, regardless of
+      launch_driver. Preprocessing and concatenation are unaffected either
+      way - they stay on the master and read the drivers' topics over DDS
+      whichever host published them.
+    -->
     <include file="$(find-pkg-share golfcart_sensor_kit_launch)/launch/lidar.launch.xml">
       <arg name="launch_driver" value="$(var launch_driver)"/>
       <arg name="vehicle_mirror_param_file" value="$(var vehicle_mirror_param_file)"/>
