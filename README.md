@@ -56,7 +56,7 @@ Configuration:
 - `config/camera_{left,right,rear}.yaml`: gscam device and pipeline settings
 - `config/zed.param.yaml`: ZED overrides, layered over the vendor defaults
 
-See [docs/design/zed_camera_integration.md](../../../docs/design/zed_camera_integration.md).
+See [docs/design/zed_camera_integration.md](https://github.com/NEWSLabNTU/2026-golf-cart/blob/main/docs/design/zed_camera_integration.md).
 
 #### IMU Sensors
 
