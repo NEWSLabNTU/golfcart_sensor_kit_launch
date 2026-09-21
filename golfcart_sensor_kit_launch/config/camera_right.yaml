@@ -32,6 +32,15 @@
     image_topic: "image_raw/compressed"
     camera_info_topic: "camera_info"
 
+    # The viewer copy. Every frames_per_sample-th encoded frame goes out again,
+    # same bytes and same header, on rviz/image_raw/compressed with its
+    # rviz/camera_info, only while something subscribes to it. 2 halves the
+    # 30 fps stream to 15 fps for RViz, which is all a screen needs, and costs
+    # nothing when nobody is looking. golfcart.rviz reads the rviz/ topics;
+    # everything else reads the full-rate pair above. Live-settable with
+    # `ros2 param set /sensing/camera/right/camera_right frames_per_sample 3`.
+    frames_per_sample: 2
+
     # NOT here, on purpose:
     #
     # camera_info_url. gmslcam resolves file:// and absolute paths only, not

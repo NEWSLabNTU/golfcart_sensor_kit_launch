@@ -16,15 +16,23 @@ verified against the previous driver and still hold are marked as such.
 | `camera_{left,right,rear}_calibration.yaml` | intrinsics |
 | `../launch/camera.launch.xml` | the `camera_info_url` for each node, and the `capture_profile` default |
 
-`camera.launch.xml` loads the camera file, then the profile's file for that
-camera, then sets `camera_info_url`. The three set disjoint parameters, so load
-order does not matter. See `camera_capture/README.md` for why a profile is a
-directory.
+`camera.launch.xml` starts ONE gmslcam process for all three cameras. Its
+process node is a transient host that reads `cameras: [rear, left, right]` and,
+per key, `<key>.enabled`, `<key>.params_files` (the camera file, then the
+profile's file for that camera) and `<key>.overrides` (`camera_info_url`), then
+creates one camera node per key in `<host namespace>/<key>` and leaves the
+graph. The three sources set disjoint parameters, so load order does not matter.
+The per-camera files reach each node as node-local arguments; passed to the
+process instead, rclrs would merge three `/**` files into every node and every
+camera would be the last one. See `camera_capture/README.md` for why a profile
+is a directory.
 
 ## Parameters gmslcam declares
 
-`device`, `width`, `height`, `fps`, `codec`, `bitrate`, `iframe_interval`,
-`frame_id`, `image_topic`, `camera_info_topic`, `camera_info_url`, `pipeline`.
+Per camera node: `device`, `width`, `height`, `fps`, `codec`, `bitrate`,
+`iframe_interval`, `frame_id`, `image_topic`, `camera_info_topic`,
+`camera_info_url`, `pipeline`, `frames_per_sample`. On the host, read once at
+startup: `cameras` and `<key>.{enabled,node_name,namespace,params_files,overrides}`.
 Nothing else: an unknown key in a parameter file is ignored without a warning,
 so a typo configures nothing rather than failing.
 
@@ -93,19 +101,40 @@ receives and suppresses detections when they disagree.
 built with `$(find-pkg-share)` in `camera.launch.xml` rather than written in the
 YAML.
 
+## The viewer copy: rviz/ topics and frames_per_sample
+
+Every camera node also publishes `rviz/image_raw/compressed` and
+`rviz/camera_info` (that is, `rviz/<image_topic>` and
+`rviz/<camera_info_topic>`), every `frames_per_sample`-th encoded frame: same
+bytes, same header as the frame it samples, the pair with one stamp. The count
+is per encoded frame, not per second, so at 30 fps `2` is 15 fps and `3` is
+10 fps; the camera YAMLs set `2`. It is lazy: on each candidate frame the node
+asks the middleware how many subscribers the rviz image topic has and publishes
+the pair only if that is at least one, so with nothing looking the topics exist
+and stay silent. Subscribing to `rviz/camera_info` alone therefore yields
+nothing; the image topic is the gate. The node logs `rviz sampler active` /
+`idle` on the transitions, and its per-30-frame line counts sampled frames.
+`frames_per_sample` is read live, so
+`ros2 param set /sensing/camera/left/camera_left frames_per_sample 3` takes
+effect on the next frame. `golfcart.rviz` reads the `rviz/` topics; every other
+consumer, and every recording, reads the full-rate pair.
+
 ## Node name, namespace, topics
 
-The binary calls itself `gmslcam`; `camera.launch.xml` renames it per camera with
-`name=` (an ordinary `__node:=` remap, which rcl applies) and pushes the
-namespace. Topics are the `image_topic` and `camera_info_topic` parameters,
-resolved against that namespace, so no `<remap>` is needed and none is present.
-QoS is `keep_last(5)`, reliable, volatile, on both publishers.
+Camera nodes are named `camera_<key>` in `<host namespace>/<key>`, so under
+the `sensing/camera` namespace the launch pushes they are
+`/sensing/camera/left/camera_left` and siblings, one process for all three
+(`pgrep -a gmslcam` shows one). Topics are the `image_topic` and
+`camera_info_topic` parameters, resolved against that namespace, so no `<remap>`
+is needed and none is present. QoS is `keep_last(5)`, reliable, volatile, on all
+four publishers. Run alone, with no `cameras` parameter, the process is one
+camera node named by its own `__node:=` remap, as the sim `configs` output shows.
 
 ## Output
 
-gmslcam prints one line per 30 published frames to stdout, per node. At 30 fps
-that is a line a second from each of three nodes in the launch log. It is the
-driver's, not ours.
+gmslcam prints one line per 30 published frames to stdout, per camera, with the
+sampled-for-rviz count beside it. At 30 fps that is a line a second per camera
+in the launch log. It is the driver's, not ours.
 
 ## nvvidconv output formats (Jetson, non-NVMM)
 
