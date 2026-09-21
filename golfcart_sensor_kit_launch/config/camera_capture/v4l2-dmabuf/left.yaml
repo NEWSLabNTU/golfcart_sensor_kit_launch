@@ -1,0 +1,21 @@
+# Capture profile: v4l2src asking the driver for dmabuf. First fallback.
+#
+# `io-mode=4` is GST_V4L2_IO_DMABUF: v4l2src ASKS the driver to export dmabuf
+# fds. Measured on the vehicle 2026-08-22 at ~40% of a core per camera against
+# ~8% for nvv4l2camerasrc, so the request is not being honoured and the import
+# copy is real. Here so that a camera that will not bind to nvv4l2camerasrc still
+# streams.
+#
+# Does NOT work against v4l2loopback, which has no dmabuf support at all. Use the
+# `sim` profile there; this is not a defect in either.
+#
+# One camera of this profile. The key is `/**` because rclrs (which gmslcam is
+# built on) matches parameter-file node keys literally, `/**` or the node's full
+# name, and does not expand `/**/camera_left`; one file per camera is what
+# survives that. The other values of this camera are in ../../camera_<cam>.yaml,
+# and the calibration URL is set in ../../../launch/camera.launch.xml. Selected
+# by that file's `capture_profile` argument; see ../README.md.
+
+/**:
+  ros__parameters:
+    pipeline: "v4l2src device=/dev/v4l/by-path/platform-tegra-capture-vi-video-index12 io-mode=4 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0 ! appsink name=ros_sink emit-signals=false sync=false max-buffers=2 drop=true"

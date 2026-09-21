@@ -1,0 +1,29 @@
+# Capture profile: the synthetic cameras, on any machine.
+#
+# Pairs with `just sim cameras`, which loads v4l2loopback and feeds three devices
+# UYVY at the real geometry. The REAL launch path then runs against them: same
+# nodes, same topics, same format string, so everything downstream of the sensor
+# is exercisable on a box with no camera.
+#
+# Software encode (videoconvert + jpegenc), so it runs on an x86 workstation as
+# well as a Jetson. It says nothing about NVJPG; for the hardware encoder on the
+# same loopback devices use `sim-nvjpeg`, and for encoder capacity
+# `just sim cameras-bench`, which needs no devices at all.
+#
+# No `io-mode` here, deliberately. v4l2loopback supports neither dmabuf (4) nor,
+# in the OUTPUT direction the feeders use, rw: `io-mode=rw` on the v4l2sink side
+# leaves the loopback node advertising no format at all, and every consumer then
+# fails with `not-negotiated`.
+#
+# Device numbers match scripts/sim/cameras.sh BASE_NR=40.
+#
+# One camera of this profile. The key is `/**` because rclrs (which gmslcam is
+# built on) matches parameter-file node keys literally, `/**` or the node's full
+# name, and does not expand `/**/camera_left`; one file per camera is what
+# survives that. The other values of this camera are in ../../camera_<cam>.yaml,
+# and the calibration URL is set in ../../../launch/camera.launch.xml. Selected
+# by that file's `capture_profile` argument; see ../README.md.
+
+/**:
+  ros__parameters:
+    pipeline: "v4l2src device=/dev/video41 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0 ! videoconvert ! video/x-raw,format=I420 ! jpegenc quality=90 ! appsink name=ros_sink emit-signals=false sync=false max-buffers=2 drop=true"

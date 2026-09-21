@@ -8,14 +8,14 @@
     See docs/design/zed_camera_integration.md.
   -->
   <arg name="launch_driver" default="true"/>
-  <arg name="camera_model" default="gscam" description="gscam | zedx | none"/>
+  <arg name="camera_model" default="gmslcam" description="gmslcam | zedx | none"/>
 
   <arg name="use_left_camera" default="true"/>
   <arg name="use_right_camera" default="true"/>
   <arg name="use_rear_camera" default="true"/>
 
   <!--
-    Which capture path the GMSL cameras use: the name of a file in
+    Which capture path the GMSL cameras use: the name of a directory in
     config/camera_capture/. See the README there.
 
     A launch argument and nothing else. It used to also read
@@ -24,7 +24,7 @@
     now the only default there is, and overriding it means saying so:
 
         ros2 launch golfcart_sensor_kit_launch camera.launch.xml \
-            camera_model:=gscam capture_profile:=v4l2-mmap
+            camera_model:=gmslcam capture_profile:=v4l2-mmap
 
     Note the route: `just launch` reaches this file through
     tier4_sensing_component.launch.xml and tier4_sensing_launch/sensing.launch.xml,
@@ -32,9 +32,10 @@
     capture_profile is not among them. Through `just launch` this default is what
     runs. Switching profiles is a launch of this file directly, or an edit here.
 
-    The three device paths used to be declared here as rear/left/right_camera_device
-    and were read by nothing; the real paths sat inside the gscam_config strings
-    in the camera YAMLs. They now live in the profile, in one place.
+    A profile is a directory of three files, one per camera, each keyed `/**`.
+    It was one file keyed `/**/camera_left` and friends; rclrs, which gmslcam is
+    built on, matches parameter-file node keys literally and never expands that
+    wildcard, so a single-file profile would load and silently configure nothing.
   -->
   <arg name="capture_profile" default="nvv4l2camerasrc"/>
 
@@ -52,44 +53,48 @@
     </include>
   </group>
 
-  <!-- GMSL Cameras Group -->
-  <group if="$(eval &quot;'$(var camera_model)'=='gscam'&quot;)">
-	  <push-ros-namespace namespace="camera"/>
+  <!--
+    GMSL cameras, one gmslcam node each.
 
-	  <!-- Rear GMSL Camera -->
-	  <group if="$(var use_rear_camera)">
-		  <push-ros-namespace namespace="rear"/>
-		  <node pkg="gscam" exec="gscam_node" name="camera_rear" output="screen">
-			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_rear.yaml"/>
-			  <!-- Second, so it wins: this is what supplies gscam_config. -->
-			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_capture/$(var capture_profile).yaml"/>
-			  <remap from="camera/image_raw/compressed" to="image_raw/compressed"/>
-			  <remap from="camera/camera_info" to="camera_info"/>
-		  </node>
-	  </group>
+    Each node loads its camera file (what the camera is), then the profile's
+    file for that camera (how pixels reach the encoder), and takes the
+    calibration URL from here, because gmslcam resolves file:// and absolute
+    paths only and a parameter file cannot spell $(find-pkg-share). The three
+    sources set disjoint parameters, so nothing depends on load order.
 
-	  <!-- Left GMSL Camera -->
-	  <group if="$(var use_left_camera)">
-		  <push-ros-namespace namespace="left"/>
-		  <node pkg="gscam" exec="gscam_node" name="camera_left" output="screen">
-			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_left.yaml"/>
-			  <!-- Second, so it wins: this is what supplies gscam_config. -->
-			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_capture/$(var capture_profile).yaml"/>
-			  <remap from="camera/image_raw/compressed" to="image_raw/compressed"/>
-			  <remap from="camera/camera_info" to="camera_info"/>
-		  </node>
-	  </group>
+    No remaps: gmslcam publishes the topic names its parameters say, relative
+    to the pushed namespace, so image_topic "image_raw/compressed" under
+    camera/left is /sensing/camera/left/image_raw/compressed once
+    sensing.launch.xml has pushed "sensing" above this file.
+  -->
+  <group if="$(eval &quot;'$(var camera_model)'=='gmslcam'&quot;)">
+    <push-ros-namespace namespace="camera"/>
 
-	  <!-- Right GMSL Camera -->
-	  <group if="$(var use_right_camera)">
-		  <push-ros-namespace namespace="right"/>
-		  <node pkg="gscam" exec="gscam_node" name="camera_right" output="screen">
-			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_right.yaml"/>
-			  <!-- Second, so it wins: this is what supplies gscam_config. -->
-			  <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_capture/$(var capture_profile).yaml"/>
-			  <remap from="camera/image_raw/compressed" to="image_raw/compressed"/>
-			  <remap from="camera/camera_info" to="camera_info"/>
-		  </node>
-	  </group>
+    <group if="$(var use_rear_camera)">
+      <push-ros-namespace namespace="rear"/>
+      <node pkg="gmslcam" exec="gmslcam" name="camera_rear" output="screen">
+        <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_rear.yaml"/>
+        <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_capture/$(var capture_profile)/rear.yaml"/>
+        <param name="camera_info_url" value="file://$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_rear_calibration.yaml"/>
+      </node>
+    </group>
+
+    <group if="$(var use_left_camera)">
+      <push-ros-namespace namespace="left"/>
+      <node pkg="gmslcam" exec="gmslcam" name="camera_left" output="screen">
+        <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_left.yaml"/>
+        <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_capture/$(var capture_profile)/left.yaml"/>
+        <param name="camera_info_url" value="file://$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_left_calibration.yaml"/>
+      </node>
+    </group>
+
+    <group if="$(var use_right_camera)">
+      <push-ros-namespace namespace="right"/>
+      <node pkg="gmslcam" exec="gmslcam" name="camera_right" output="screen">
+        <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_right.yaml"/>
+        <param from="$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_capture/$(var capture_profile)/right.yaml"/>
+        <param name="camera_info_url" value="file://$(find-pkg-share golfcart_sensor_kit_launch)/config/camera_right_calibration.yaml"/>
+      </node>
+    </group>
   </group>
 </launch>

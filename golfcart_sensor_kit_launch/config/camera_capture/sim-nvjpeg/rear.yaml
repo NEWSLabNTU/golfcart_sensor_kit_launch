@@ -1,0 +1,19 @@
+# Capture profile: the synthetic cameras through the Jetson hardware encoder.
+#
+# The `sim` profile with the vehicle's `nvvidconv ! nvjpegenc` chain in place of
+# the software encoder, so a Jetson with no cameras attached exercises the real
+# VIC and NVJPG path against v4l2loopback. Jetson only: the two elements do not
+# exist elsewhere.
+#
+# Same loopback devices and the same io-mode caveat as `sim`.
+#
+# One camera of this profile. The key is `/**` because rclrs (which gmslcam is
+# built on) matches parameter-file node keys literally, `/**` or the node's full
+# name, and does not expand `/**/camera_left`; one file per camera is what
+# survives that. The other values of this camera are in ../../camera_<cam>.yaml,
+# and the calibration URL is set in ../../../launch/camera.launch.xml. Selected
+# by that file's `capture_profile` argument; see ../README.md.
+
+/**:
+  ros__parameters:
+    pipeline: "v4l2src device=/dev/video42 ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0 ! appsink name=ros_sink emit-signals=false sync=false max-buffers=2 drop=true"

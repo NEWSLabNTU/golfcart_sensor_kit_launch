@@ -44,7 +44,7 @@ Launch files:
 #### Camera Sensors
 
 Two camera sets on two machines, selected by `camera_model`:
-- `gscam` — three GMSL cameras (left, right, rear) on the Advantech
+- `gmslcam` — three GMSL cameras (left, right, rear) on the Advantech
 - `zedx` — one ZED X stereo camera on the orin
 - `none` — no cameras
 
@@ -53,7 +53,8 @@ Launch files:
 - `launch/zed.launch.xml`: ZED X driver, container, and its `robot_state_publisher`
 
 Configuration:
-- `config/camera_{left,right,rear}.yaml`: gscam device and pipeline settings
+- `config/camera_{left,right,rear}.yaml`: gmslcam device, geometry, codec and frame
+- `config/camera_capture/<profile>/`: the capture pipeline, one file per camera
 - `config/zed.param.yaml`: ZED overrides, layered over the vendor defaults
 
 See [docs/design/zed_camera_integration.md](../../../docs/design/zed_camera_integration.md).
@@ -137,7 +138,7 @@ ros2 launch golfcart_sensor_kit_launch lidar.launch.xml host_ip:=192.168.26.1
 
 ```bash
 # Three GMSL cameras (Advantech)
-ros2 launch golfcart_sensor_kit_launch camera.launch.xml camera_model:=gscam
+ros2 launch golfcart_sensor_kit_launch camera.launch.xml camera_model:=gmslcam
 
 # ZED X (orin)
 ros2 launch golfcart_sensor_kit_launch camera.launch.xml camera_model:=zedx
@@ -157,7 +158,7 @@ Through the full stack these are reached by environment variable, since the
 Autoware sensing launch chain forwards only a fixed set of arguments:
 
 ```bash
-CAMERA_MODEL=gscam IMU_SOURCE=zed just launch
+CAMERA_MODEL=gmslcam IMU_SOURCE=zed just launch
 ```
 
 #### GNSS Configuration

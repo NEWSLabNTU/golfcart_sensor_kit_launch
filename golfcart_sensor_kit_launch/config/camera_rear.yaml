@@ -1,43 +1,48 @@
 /**:
   ros__parameters:
-    # Camera device configuration
-    video_device: "/dev/v4l/by-path/platform-tegra-capture-vi-video-index10" # visit camera_capture/ to find the real device mapping
-    camera_name: "camera_rear"
-    camera_info_url: "package://golfcart_sensor_kit_launch/config/camera_rear_calibration.yaml"
+    # Which camera this is. The by-path name is the one the 2026-08-21 device
+    # mapping fix settled on; camera_capture/ carries the same path in the
+    # pipeline string, and the two must agree.
+    device: "/dev/v4l/by-path/platform-tegra-capture-vi-video-index10"
+
+    # Stream geometry. gmslcam uses these for its default pipeline and for the
+    # CameraInfo it publishes when no calibration is loaded. Through
+    # camera.launch.xml a capture profile always supplies the pipeline, so the
+    # caps in that string are what actually runs; keep these equal to them.
+    width: 1920
+    height: 1280
+    fps: 30
+
+    # JPEG, not gmslcam's h265 default. Every message must decode alone (bag
+    # seeking, late joiners, single-frame loss), the DDS profiles cannot carry
+    # raw, and the consumers read the bare "jpeg" this writes into
+    # CompressedImage.format. The reasoning is in the superproject's
+    # docs/roadmaps/2-camera-image-pipeline.md.
+    codec: "jpeg"
+
     # The optical frame, not the mounting frame. REP-103 asks image data to
     # name the frame its projection is done in -- x right, y down, z along
     # the view -- and anything that takes this at its word and finds a body
     # frame comes out rotated ninety degrees.
     frame_id: "camera_rear_optical_link"
 
-    # Image settings
-    image_width: 1920
-    image_height: 1280
-    framerate: 30.0
+    # Relative to the node's namespace, which camera.launch.xml pushes to
+    # /sensing/camera/rear, so these become
+    # /sensing/camera/rear/image_raw/compressed and /sensing/camera/rear/camera_info.
+    image_topic: "image_raw/compressed"
+    camera_info_topic: "camera_info"
 
-    # The capture pipeline is NOT here. It is the one part that cannot be
-    # settled without the hardware, so it lives in camera_capture/<profile>.yaml
-    # and is selected by camera.launch.xml's capture_profile argument. That file
-    # loads this one and then the profile, so the profile supplies gscam_config.
+    # NOT here, on purpose:
     #
-    # A bare `ros2 run gscam gscam_node --params-file <this>` will therefore
-    # fail with no pipeline. Pass the profile too:
-    #   --params-file camera_capture/v4l2-dmabuf.yaml
-
-    # Camera control parameters
-    auto_exposure: true
-    auto_white_balance: true
-    brightness: 128
-    contrast: 128
-    saturation: 128
-
-    # Image processing
-    image_encoding: "jpeg"
-    sync_sink: false
-    preroll: false
-    use_gst_timestamps: true
-
-    # Performance settings
-    reopen_on_eof: false
-    camera_info_rescale: true
-    image_raw.enable_pub_plugins: ["image_transport/compressed"]
+    # camera_info_url. gmslcam resolves file:// and absolute paths only, not
+    # package://, and a parameter file has no $(find-pkg-share). It is set as a
+    # <param> in camera.launch.xml, pointing at camera_rear_calibration.yaml.
+    #
+    # pipeline. The capture path is the one part that cannot be settled without
+    # the hardware, so it lives in camera_capture/<profile>/rear.yaml and is
+    # selected by camera.launch.xml's capture_profile argument. Without it
+    # gmslcam builds its own v4l2src io-mode=dmabuf pipeline from the values
+    # above, which is not the measured path. A bare
+    #   ros2 run gmslcam gmslcam --params-file <this>
+    # therefore runs, but not what the vehicle runs; pass the profile too:
+    #   --params-file camera_capture/nvv4l2camerasrc/rear.yaml

@@ -1,0 +1,25 @@
+# Capture profile: nvv4l2camerasrc, the zero-copy path. THE DEFAULT.
+#
+# NVIDIA's source element for exactly this sensor class. It does not ask for
+# dmabuf, it only does dmabuf: V4L2_MEMORY_DMABUF in importer role, straight into
+# NVMM, so nvvidconv has nothing to import and the CPU never touches a frame.
+#
+# Verified on the vehicle 2026-08-22 against the oToCam nv_imx390 driver: it
+# binds, and costs ~8% of a core per camera against ~40% on v4l2-dmabuf. If it
+# ever fails to negotiate, fall back to v4l2-dmabuf; scripts/check/camera_pipeline.sh
+# tries every profile against a real device and says which cleared.
+#
+# `do-timestamp=true` is kept from the measured string. It no longer decides the
+# message stamp: gmslcam stamps each message from the host clock when it pulls
+# the encoded buffer, not from the buffer PTS.
+#
+# One camera of this profile. The key is `/**` because rclrs (which gmslcam is
+# built on) matches parameter-file node keys literally, `/**` or the node's full
+# name, and does not expand `/**/camera_left`; one file per camera is what
+# survives that. The other values of this camera are in ../../camera_<cam>.yaml,
+# and the calibration URL is set in ../../../launch/camera.launch.xml. Selected
+# by that file's `capture_profile` argument; see ../README.md.
+
+/**:
+  ros__parameters:
+    pipeline: "nvv4l2camerasrc device=/dev/v4l/by-path/platform-tegra-capture-vi-video-index12 do-timestamp=true ! video/x-raw(memory:NVMM),format=UYVY,width=1920,height=1280,interlace-mode=progressive,framerate=30/1 ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0 ! appsink name=ros_sink emit-signals=false sync=false max-buffers=2 drop=true"

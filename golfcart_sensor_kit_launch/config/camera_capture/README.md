@@ -1,9 +1,10 @@
 # Capture profiles
 
-One file here is one **capture path**: how pixels get from the oToCam sensor to
-`nvjpegenc`. Everything else about a camera — its name, frame, geometry,
-calibration URL, encoding — lives in `../camera_{left,right,rear}.yaml` and does
-not change between profiles.
+One directory here is one **capture path**: how pixels get from the oToCam sensor
+to the JPEG encoder and into gmslcam's appsink. Everything else about a camera —
+its device, geometry, codec, frame, topics — lives in `../camera_{left,right,rear}.yaml`
+and does not change between profiles; the calibration URL is set in
+`camera.launch.xml`.
 
 The split exists because the capture path is the one part of the pipeline that
 cannot be settled without the hardware, and the hardware is on the vehicle.
@@ -17,39 +18,55 @@ another profile, launch this file directly:
 
 ```bash
 ros2 launch golfcart_sensor_kit_launch camera.launch.xml \
-    camera_model:=gscam capture_profile:=v4l2-mmap
+    camera_model:=gmslcam capture_profile:=v4l2-mmap
 ```
 
 To change what the vehicle runs, change the default in `camera.launch.xml`.
 
-`camera.launch.xml` loads `../camera_<cam>.yaml` first and then the profile, so
-the profile's `gscam_config` wins. Each profile carries all three cameras, keyed
-by node name:
+## Layout: one file per camera
+
+```
+camera_capture/<profile>/left.yaml
+camera_capture/<profile>/right.yaml
+camera_capture/<profile>/rear.yaml
+```
+
+each holding exactly one parameter:
 
 ```yaml
-/**/camera_left:
+/**:
   ros__parameters:
-    gscam_config: "..."
+    pipeline: "..."
 ```
+
+It was one file per profile, keyed `/**/camera_left:` and friends. That key
+shape is an rclcpp feature: rclcpp expands the `/**/` prefix into a regex, while
+rclrs (which gmslcam is built on) matches node keys literally, `/**` or the
+node's full name, and nothing else. A single-file profile loads without error and
+configures nothing, leaving every node on gmslcam's built-in `v4l2src
+io-mode=dmabuf` pipeline. Three files keyed `/**` are what both runtimes read.
 
 ## Which one
 
-| profile | source element | use it when |
-|---|---|---|
-| `nvv4l2camerasrc` | `nvv4l2camerasrc` | **default.** The zero-copy target: it either negotiates or it does not. |
-| `v4l2-dmabuf` | `v4l2src io-mode=4` | byte-for-byte what shipped before profiles existed. First fallback. |
-| `v4l2-mmap` | `v4l2src io-mode=2` | fallback that definitely copies. Use when the two above fail, to prove the rest of the stack. |
-| `sim` | `v4l2src` on v4l2loopback | no cameras attached. Pairs with `just sim cameras`. |
+| profile | source element | encoder | use it when |
+|---|---|---|---|
+| `nvv4l2camerasrc` | `nvv4l2camerasrc` | NVJPG | **default.** Verified on the vehicle: ~8% of a core per camera. |
+| `v4l2-dmabuf` | `v4l2src io-mode=4` | NVJPG | first fallback; measured at ~40% of a core, so the copy is real. |
+| `v4l2-mmap` | `v4l2src io-mode=2` | NVJPG | fallback that definitely copies. Proves the rest of the stack when the two above fail. |
+| `sim` | `v4l2src` on v4l2loopback | `jpegenc` (CPU) | no cameras attached, any machine. Pairs with `just sim cameras`. |
+| `sim-nvjpeg` | `v4l2src` on v4l2loopback | NVJPG | the same, on a Jetson, through the hardware encoder. |
+| `videotestsrc` | `videotestsrc` inside the node | `jpegenc` (CPU) | no devices, no sudo: launch, topics, frame ids, format and calibration wiring, anywhere. |
 
 The ladder to walk on the vehicle is `nvv4l2camerasrc` → `v4l2-dmabuf` →
 `v4l2-mmap`, and `scripts/check/camera_pipeline.sh` walks it for you against a
 real device and reports which cleared.
 
-## What is identical in all of them
+## What is identical in the hardware profiles
 
 ```
 ... ! nvvidconv ! video/x-raw(memory:NVMM),format=NV12 ! nvjpegenc quality=90
     ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0
+    ! appsink name=ros_sink emit-signals=false sync=false max-buffers=2 drop=true
 ```
 
 - **`nvvidconv`** is the VIC block, 4:2:2 to 4:2:0. Measured: this and the
@@ -58,18 +75,20 @@ real device and reports which cleared.
 - **`nvjpegenc quality=90`** is the NVJPG block. Not below 85 on these cameras:
   JPEG ringing lands on the high-contrast marker edges that subpixel refinement
   measures, and corner error becomes pose error.
-- **The trailing leaky queue** is not decoration. gscam 2.0.2 builds its own
-  appsink with no `max-buffers`/`drop`, which is its documented permanent-stall
-  bug, and those properties cannot be reached from `gscam_config`. With the
-  queue there, a wedged appsink costs frames instead of back-pressuring NVJPG,
-  the VIC and the camera. Two JPEG buffers is about 800 kB.
+- **The appsink is in the string**, named `ros_sink`, because gmslcam looks it up
+  by that name and pulls encoded buffers from it. `max-buffers=2 drop=true` is
+  what makes a wedged consumer cost frames instead of back-pressuring NVJPG, the
+  VIC and the camera. The leaky queue in front of it is kept from the measured
+  pipeline: it decouples the encoder thread from the sink, and two JPEG buffers
+  is about 800 kB.
 
-gscam appends `! appsink` itself. No `jpegparse` is needed — `nvjpegenc` emits
-`image/jpeg` and that is what gscam's appsink asks for, verified running.
+No `jpegparse`: `nvjpegenc` emits `image/jpeg` and the appsink takes it as is,
+verified running. gmslcam's own default pipeline inserts one; the profiles do
+not, and the measured strings are what they are.
 
 ## The device paths
 
-The three `by-path` names are the same in every profile except `sim`, and they
-are the reason the device does not appear in `camera.launch.xml` any more: it
-used to be declared there as `left_camera_device` and friends, which nothing
-read, while the real path sat inside the `gscam_config` string. One place now.
+`left` is `platform-tegra-capture-vi-video-index12`, `right` is `index0`, `rear`
+is `index10`: the mapping the 2026-08-21 fix established, now in every hardware
+profile and in `../camera_<cam>.yaml`. The two `v4l2-*` fallbacks carried the
+pre-fix mapping until the move to gmslcam; that is corrected, not remeasured.

@@ -10,7 +10,7 @@
     forward a fixed set of arguments, so there is no launch-argument path from
     golfcart.launch.yaml down to here. An env var is the available channel.
   -->
-  <arg name="camera_model" default="$(env CAMERA_MODEL gscam)" description="gscam | zedx | none"/>
+  <arg name="camera_model" default="$(env CAMERA_MODEL gmslcam)" description="gmslcam | zedx | none"/>
   <arg name="imu_source" default="$(env IMU_SOURCE xsens)" description="xsens | zed"/>
   <!--
     Which concatenator runs: the CPU one from autoware_pointcloud_preprocessor,

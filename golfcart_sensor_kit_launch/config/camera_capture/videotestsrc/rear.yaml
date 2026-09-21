@@ -1,0 +1,20 @@
+# Capture profile: no devices at all.
+#
+# Each node draws its own test pattern, so this needs no v4l2loopback, no sudo
+# and no camera: it is the profile for proving the launch file, the topics, the
+# frame ids, the format string and the calibration wiring on any machine,
+# including CI. Distinct patterns per camera so three windows say which is which.
+#
+# Software encode, like `sim`. What it cannot tell you is anything about capture
+# or about the hardware encoder.
+#
+# One camera of this profile. The key is `/**` because rclrs (which gmslcam is
+# built on) matches parameter-file node keys literally, `/**` or the node's full
+# name, and does not expand `/**/camera_left`; one file per camera is what
+# survives that. The other values of this camera are in ../../camera_<cam>.yaml,
+# and the calibration URL is set in ../../../launch/camera.launch.xml. Selected
+# by that file's `capture_profile` argument; see ../README.md.
+
+/**:
+  ros__parameters:
+    pipeline: "videotestsrc is-live=true pattern=snow ! video/x-raw,format=UYVY,width=1920,height=1280,framerate=30/1 ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0 ! videoconvert ! video/x-raw,format=I420 ! jpegenc quality=90 ! appsink name=ros_sink emit-signals=false sync=false max-buffers=2 drop=true"
