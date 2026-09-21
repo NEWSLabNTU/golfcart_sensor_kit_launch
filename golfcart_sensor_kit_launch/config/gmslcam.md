@@ -31,8 +31,20 @@ is a directory.
 
 Per camera node: `device`, `width`, `height`, `fps`, `codec`, `bitrate`,
 `iframe_interval`, `frame_id`, `image_topic`, `camera_info_topic`,
-`camera_info_url`, `pipeline`, `frames_per_sample`. On the host, read once at
-startup: `cameras` and `<key>.{enabled,node_name,namespace,params_files,overrides}`.
+`camera_info_url`, `pipeline`, `frames_per_sample`, `stall_timeout_ms`. On the
+host, read once at startup: `cameras` and
+`<key>.{enabled,node_name,namespace,params_files,overrides}`.
+
+## When a camera fails
+
+A camera that fails at startup, or whose capture stops, is reported once on
+stderr as `WARN camera failed: key=<key> node=<fqn> stage=<startup|runtime>: ...`
+and stays down: no restart, its topics go away, its node stays on the graph
+(rclrs keeps a node registered for the life of its executor). The others keep
+running; the process exits non-zero only when no camera is running. Capture
+"stopping" is a GStreamer bus error, EOS, or no encoded frame for
+`stall_timeout_ms` (5000 by default; 0 disables), because a source that goes
+away does not always say so: a v4l2loopback whose writer exits just stops.
 Nothing else: an unknown key in a parameter file is ignored without a warning,
 so a typo configures nothing rather than failing.
 
@@ -109,11 +121,11 @@ Every camera node also publishes `rviz/image_raw/compressed` and
 bytes, same header as the frame it samples, the pair with one stamp. The count
 is per encoded frame, not per second, so at 30 fps `2` is 15 fps and `3` is
 10 fps; the camera YAMLs set `2`. It is lazy: on each candidate frame the node
-asks the middleware how many subscribers the rviz image topic has and publishes
-the pair only if that is at least one, so with nothing looking the topics exist
-and stay silent. Subscribing to `rviz/camera_info` alone therefore yields
-nothing; the image topic is the gate. The node logs `rviz sampler active` /
-`idle` on the transitions, and its per-30-frame line counts sampled frames.
+asks the middleware how many subscribers the two rviz topics have and publishes
+the pair only if their sum is at least one, so with nothing looking the topics
+exist and stay silent, and a subscriber on either one, image or camera_info,
+starts both. The node logs `rviz sampler active` / `idle` on the transitions,
+and its per-30-frame line counts sampled frames.
 `frames_per_sample` is read live, so
 `ros2 param set /sensing/camera/left/camera_left frames_per_sample 3` takes
 effect on the next frame. `golfcart.rviz` reads the `rviz/` topics; every other
