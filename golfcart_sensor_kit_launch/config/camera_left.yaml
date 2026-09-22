@@ -35,8 +35,9 @@
     # NOT here, on purpose:
     #
     # camera_info_url. gmslcam resolves file:// and absolute paths only, not
-    # package://, and a parameter file has no $(find-pkg-share). It is set as a
-    # <param> in camera.launch.xml, pointing at camera_left_calibration.yaml.
+    # package://, and a parameter file cannot use the find-pkg-share substitution
+    # (play_launch's Rust parser resolves it even inside a comment). It is set as
+    # a <param> in camera.launch.xml, pointing at camera_left_calibration.yaml.
     #
     # pipeline. The capture path is the one part that cannot be settled without
     # the hardware, so it lives in camera_capture/<profile>/left.yaml and is
