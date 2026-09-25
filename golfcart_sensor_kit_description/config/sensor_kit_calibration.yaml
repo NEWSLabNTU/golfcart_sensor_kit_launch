@@ -1,70 +1,72 @@
+# Golf cart sensor kit calibration derived from the golf-* LCTK sessions.
+# Lengths are meters; roll/pitch/yaw are URDF fixed-axis XYZ radians.
+# sensor_kit_base_link is placed at the VLP-32C origin (frame: velodyne).
 sensor_kit_base_link:
   vlp32c:
-    x: 0.46
+    x: 0.0
     y: 0.0
-    z: 1.96
+    z: 0.0
     roll: 0.0
     pitch: 0.0
     yaw: 0.0
+  # Child frame seyond. Weighted merge of the three independent camera paths.
+  # All six source archives have a DEGENERATE Quality Verdict.
+  # Routes are T_velodyne<-seyond; xyz is meters and RPY is radians:
+  # left:  xyz 2.479202, 0.130762, -1.413522; rpy -0.045843, -1.331533, -3.099451
+  # right: xyz 2.250433, 0.087553, -1.443377; rpy -0.082682, -1.332437, -3.075117
+  # zed:   xyz 2.135131, 0.026951, -1.428290; rpy -0.078874, -1.334083, -3.069236
+  # Weighted by inverse propagated uncertainty; rotations use a weighted SO(3) mean.
   falcon:
-    x: 2.55
-    y: 0.0
-    z: 0.4
-    roll: 3.1415926 # rotate 180 around x axis
-    pitch: -1.7707963 # rotate around y axis
-    yaw: -0.04
+    x: 2.197845303
+    y: 0.05262411
+    z: -1.430838877
+    roll: -0.077524484
+    pitch: -1.333385551
+    yaw: -3.073378269
+  # These poses were measured in base_link while base_link and sensor_kit_base_link
+  # coincided. Converted with the active vehicle sensors_calibration.yaml:
+  # T_base_link<-sensor_kit_base_link = (0.46, 0, 1.966; RPY -0.016794, 0.031978, 0).
+  # The six LCTK archives do not solve these sensors.
   imu_link:
-    x: -0.67
-    y: 0.03
-    z: 1.81
-    roll: 0.0
-    pitch: 0.0
-    yaw: 0.0
+    x: -1.124434567
+    y: 0.033220893
+    z: -0.191518348
+    roll: 0.016802589
+    pitch: -0.031973489
+    yaw: -0.000537196
   gnss_base_link:
-    x: 0.83
-    y: 0.0
-    z: 1.69
-    roll: 0.0
-    pitch: 0.0
-    yaw: 0.0
-  camera_front:
-    x: 0.5      # 50cm forward from sensor_kit_base
-    y: 0.0      # centered
-    z: 0.3      # 30cm up
-    roll: 0.0
-    pitch: 0.0
-    yaw: 0.0    # facing forward
+    x: 0.37863526
+    y: 0.004433895
+    z: -0.263991818
+    roll: 0.016802589
+    pitch: -0.031973489
+    yaw: -0.000537196
   camera_rear:
-    x: -0.5     # 50cm backward from sensor_kit_base
-    y: 0.0      # centered
-    z: 0.3      # 30cm up
-    roll: 0.0
-    pitch: 0.0
-    yaw: 3.14159 # facing backward (180 degrees)
+    x: -0.906242929
+    y: 0.02847863
+    z: -1.695602761
+    roll: -0.016802674
+    pitch: 0.031973444
+    yaw: 3.141052803
   camera_left:
-    x: 0.0      # centered front-back
-    y: 0.4      # 40cm to the left
-    z: 0.3      # 30cm up
-    roll: 0.0
-    pitch: 0.0
-    yaw: 1.5708 # facing left (90 degrees)
+    x: 0.9426154546835364
+    y: 0.5584876525550044
+    z: -1.1269152055909257
+    roll: -0.08157476261707551
+    pitch: -0.1090220082688429
+    yaw: 0.7341035203898821
   camera_right:
-    x: 0.0      # centered front-back
-    y: -0.4     # 40cm to the right
-    z: 0.3      # 30cm up
-    roll: 0.0
-    pitch: 0.0
-    yaw: -1.5708 # facing right (-90 degrees)
-  # ZED X mounting point: the threaded screw hole in the camera's bottom face.
-  # Everything below this frame (camera_center, left/right lenses, optical
-  # frames) comes from the vendor URDF via the robot_state_publisher in
-  # zed.launch.xml - do NOT fold the lens offsets in here.
-  #
-  # PLACEHOLDER. Not measured. See docs/roadmaps/2-zed-camera-integration.md.
+    x: 0.9795053939071179
+    y: -0.4553600340666411
+    z: -1.1362438424601349
+    roll: 0.028163430272001973
+    pitch: -0.08230178821024782
+    yaw: -0.09271942248981242
+  # Mount frame; conversion includes ZED X left-lens offset from its URDF.
   zed_camera_link:
-    x: 2.55
-    y: 0.0
-    z: 0.32
-    roll: 0.0
-    pitch: 0.0
-    yaw: 0.0
+    x: 2.225473859
+    y: 0.032849606
+    z: -1.537299588
+    roll: 0.016835173
+    pitch: -0.037701763
+    yaw: 0.006832191
