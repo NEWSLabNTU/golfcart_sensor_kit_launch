@@ -72,9 +72,9 @@ Launch files:
 #### GNSS Sensors
 
 Supported GNSS receivers:
-- u-blox ZED-F9P (`ublox_gps`, built from the `ublox_f9p_ws` submodule of the
-  parent repo, not the apt package), optionally with RTK corrections from the
-  `ntrip_client` in the same workspace
+- u-blox ZED-F9P (`ublox_gps`, built from the NEWSLabNTU/ublox submodule of the
+  parent repo, not the apt package, which has no RTCM input), optionally with
+  RTK corrections from the apt `ntrip_client`
 - Septentrio GNSS
 
 Launch files:
@@ -82,8 +82,9 @@ Launch files:
 
 Config:
 - `config/ublox_f9p.yaml`: the receiver, as a rover (`tmode3: 0`)
-- `config/ntrip_client.param.yaml`: the caster; credentials are not committed
-  and come from the parent repo's `config/ntrip.param.yaml` via `NTRIP_PARAM_FILE`
+- `config/ntrip_client.param.yaml`: caster and account. **Gitignored** (this
+  repo is public); copy `config/ntrip_client.param.yaml.example`, fill in the
+  account, rebuild once
 
 #### Combined Sensing Launch
 
@@ -167,7 +168,7 @@ CAMERA_MODEL=gmslcam IMU_SOURCE=zed just launch
 # Specify GNSS receiver type (ublox or septentrio)
 ros2 launch golfcart_sensor_kit_launch gnss.launch.xml gnss_receiver:=ublox
 
-# With RTK corrections over NTRIP (u-blox only; needs NTRIP_PARAM_FILE with credentials)
+# With RTK corrections over NTRIP (u-blox only; needs config/ntrip_client.param.yaml)
 ros2 launch golfcart_sensor_kit_launch gnss.launch.xml use_ntrip:=true
 ```
 

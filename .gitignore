@@ -1,0 +1,3 @@
+# NTRIP caster account. This repository is public; the account is not.
+# Copy config/ntrip_client.param.yaml.example and fill it in on the vehicle.
+golfcart_sensor_kit_launch/config/ntrip_client.param.yaml

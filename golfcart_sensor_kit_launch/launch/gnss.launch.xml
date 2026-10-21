@@ -1,20 +1,15 @@
 <launch>
   <arg name="launch_driver" default="true"/>
   <!--
-    `none` exists because the receiver is not on every host. The u-blox is
-    cabled to the orin (the oToCam overlay took the Advantech's USB ports), but
-    both hosts launched this node, so the Advantech spent every run failing:
+    `none` is for a host with no receiver cabled to it. The u-blox is on the
+    Advantech (/dev/ublox-gps), and only the Advantech runs the sensing chain,
+    so the default is right for the vehicle today. When the node is launched
+    where the device is missing it dies on
 
-      terminate called after throwing an instance of 'std::runtime_error'
-        what():  U-Blox: Could not open serial port :/dev/ublox-gps
-                 open: No such file or directory
+      U-Blox: Could not open serial port :/dev/ublox-gps
 
-    with `respawn="true" respawn_delay="1.0"` restarting it forever. Each
-    restart re-registers the name the orin's node already holds, which is what
-    duplicated_node_checker reports as
-    `Duplicated nodes detected[/sensing/gnss/ublox]` (1131 times in the
-    2026-08-25 observable run). Set GNSS_RECEIVER=none in config/sensors.conf on
-    the host without the receiver.
+    and respawns every second, so set GNSS_RECEIVER=none in
+    config/sensors.conf on such a host.
   -->
   <arg name="gnss_receiver" default="$(env GNSS_RECEIVER ublox)" description="ublox(default) | septentrio | none"/>
 
@@ -27,16 +22,15 @@
     immediately before the include, the way it does POINTCLOUD_BACKEND, so the
     argument works from the command line; nothing needs USE_NTRIP in a shell.
 
-    The caster (host, port, mountpoint) is in config/ntrip_client.param.yaml
-    here. The account is not: every e-GNSS mountpoint authenticates, and the
-    credentials belong to the lab, so they live in the parent repo's gitignored
-    config/ntrip.param.yaml, which scripts/env.sh exports as NTRIP_PARAM_FILE
-    when it exists. Without it the kit's own file loads, with empty username and
-    password, and the client exits on start naming the parameter it is missing.
+    The caster and the account are both in config/ntrip_client.param.yaml
+    here, which is gitignored because this repository is public: copy
+    ntrip_client.param.yaml.example beside it and fill in the account. With the
+    file missing the launch fails when use_ntrip is on, naming the path; with
+    use_ntrip off the file is never read.
   -->
   <arg name="use_ntrip" default="$(env USE_NTRIP false)" description="launch the NTRIP client and feed RTCM to the receiver"/>
   <arg name="ntrip_param_file"
-       default="$(env NTRIP_PARAM_FILE $(find-pkg-share golfcart_sensor_kit_launch)/config/ntrip_client.param.yaml)"/>
+       default="$(find-pkg-share golfcart_sensor_kit_launch)/config/ntrip_client.param.yaml"/>
 
   <group>
     <push-ros-namespace namespace="gnss"/>
@@ -61,12 +55,12 @@
     <let name="orientation_topic_name" value="/autoware_orientation"/>
 
     <!--
-      u-blox ZED-F9P. `ublox_gps` is built from source, from the ublox_f9p_ws
+      u-blox ZED-F9P. `ublox_gps` is built from source, from the NEWSLabNTU/ublox
       submodule under src/sensor_component/external, not from the apt
-      ros-humble-ublox-gps that used to satisfy the same package name. The two
-      differ in one thing that matters here: the fork takes its RTCM input as
-      mavros_msgs/RTCM, which is what the ntrip_client in the same workspace
-      publishes, where the apt build wants rtcm_msgs/Message.
+      ros-humble-ublox-gps that satisfies the same package name. The apt 2.3.0
+      build has no RTCM input at all, so RTK corrections could not reach the
+      receiver; the fork subscribes /rtcm as mavros_msgs/RTCM, which the apt
+      ntrip_client publishes with rtcm_message_package set to mavros_msgs.
 
       Topic layout, all relative so the tree can be re-namespaced:
 
@@ -93,7 +87,7 @@
       </node>
 
       <!--
-        NTRIP client, from the same workspace (LORD-MicroStrain's, vendored).
+        NTRIP client, LORD-MicroStrain's, from apt (ros-humble-ntrip-client).
         Same namespace as the driver so both remaps stay relative: it publishes
         `rtcm` and subscribes `nmea`, and both are moved onto the names above.
 

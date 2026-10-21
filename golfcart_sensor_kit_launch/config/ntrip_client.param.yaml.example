@@ -1,0 +1,36 @@
+# NTRIP client, launched by launch/gnss.launch.xml when use_ntrip is on.
+#
+# Template. The launch loads `ntrip_client.param.yaml` beside this file, which
+# is gitignored because it holds the caster account and this repository is
+# public. Set up a vehicle with:
+#
+#     cp ntrip_client.param.yaml.example ntrip_client.param.yaml
+#     # fill in username and password, then rebuild once so the symlink
+#     # install picks up the new file
+#
+# Never put the account in this .example file.
+#
+# Read by `ntrip_client`, LORD-MicroStrain's, from apt (ros-humble-ntrip-client).
+# It publishes the caster's RTCM stream on `rtcm` and uplinks the receiver's
+# NMEA on `nmea`. `rtcm_message_package` must be mavros_msgs: the u-blox driver
+# is the NEWSLabNTU/ublox fork, whose `/rtcm` subscription takes
+# mavros_msgs/RTCM. The apt build defaults to the same, but a mismatch here
+# publishes a type nothing subscribes to and fails silently, so it is explicit.
+#
+# Every e-GNSS mountpoint is a network VRS that requires the GGA uplink.
+# `GNSS_Taiwan` is RTCM 3.2 (MSM) and corrects GPS, GLONASS, Galileo, BeiDou
+# and QZSS; `Taiwan` is RTCM 3.1 and corrects GPS and GLONASS only, and
+# `Taiwan_RTCM23` can never work because the ZED-F9P has no RTCM 2.x parser.
+#
+# e-GNSS drops ICMP, so test reachability with TCP, not ping:
+#     timeout 5 bash -c 'cat < /dev/null > /dev/tcp/210.241.63.193/81'
+/**:
+  ros__parameters:
+    host: "210.241.63.193"        # e-GNSS Taiwan (NLSC); the service has no stable hostname
+    port: 81
+    mountpoint: "GNSS_Taiwan"
+    authenticate: true
+    username: ""
+    password: ""
+    rtcm_message_package: "mavros_msgs"
+    rtcm_frame_id: "gps"
