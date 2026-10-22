@@ -45,7 +45,14 @@
                     "/sensing/lidar/falcon/iv_points",
                     "/sensing/lidar/vlp32/pointcloud_before_sync",
                 ]
-    output_frame: $(var base_frame)
+    # Literal, not a var substitution of base_frame. base_frame is always base_link on this
+    # vehicle. The file is loaded with allow_substs from
+    # pointcloud_preprocessor.launch.py, but play_launch 0.18.3 does not resolve
+    # var substitutions inside parameter files (0.11.0 did): on 2026-10-22 the node got
+    # the literal string, every TF lookup failed, the concatenated cloud and
+    # localization's crop box were empty, and NDT never initialized. Do not put
+    # launch substitutions in parameter files.
+    output_frame: base_link
     matching_strategy:
       type: advanced
       lidar_timestamp_offsets: [0.0, 0.0]
