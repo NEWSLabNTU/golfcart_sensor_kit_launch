@@ -28,6 +28,20 @@
   <arg name="camera_ns" default="/sensing/camera" description="Absolute parent namespace"/>
 
   <!--
+    Stereo video for the orin's bag: the rectified left and right images,
+    H.264 encoded on the Orin's NVENC by Isaac ROS, published as
+    sensor_msgs/CompressedImage (format h264) on
+      left/color/rect/image/h264 and right/color/rect/image/h264.
+    Needs the setup step isaac-h264-encoder on the orin; with this false
+    nothing here references Isaac ROS, so a host without it still launches.
+    The width and height must match what the ZED publishes: HD1200 grab,
+    pub_resolution NATIVE (zedx.yaml, common_stereo.yaml).
+  -->
+  <arg name="zed_stereo_video" default="false" description="Publish H.264 left/right rectified streams"/>
+  <arg name="zed_video_width" default="1920"/>
+  <arg name="zed_video_height" default="1200"/>
+
+  <!--
     Parameter layering, last one winning. Everything tunable lives in
     zed.param.yaml; only camera_name and camera_model are set inline below,
     because they are also substituted into namespaces and the URDF command.
@@ -50,8 +64,50 @@
         <param from="$(var zed_override_config)"/>
         <param name="general.camera_name" value="$(var zed_camera_name)"/>
         <param name="general.camera_model" value="$(var zed_camera_model)"/>
+        <!-- Left/right only when they are encoded; see zed.param.yaml. -->
+        <param name="video.publish_left_right" value="$(var zed_stereo_video)"/>
 
         <extra_arg name="use_intra_process_comms" value="true"/>
+      </composable_node>
+    </load_composable_node>
+
+    <!--
+      The stereo encoders, in the ZED's own container. Per side: Isaac's
+      format converter takes the wrapper's bgr8 (enable_24bit_output) to the
+      rgb8 the encoder subscribes, on the GPU, then the encoder turns it into
+      NV12 and H.264. The rgb8 topic is an internal hop; nothing records it.
+      Encoder settings are Isaac's defaults (qp 20, an I-frame every 5).
+    -->
+    <load_composable_node target="$(var camera_ns)/$(var zed_camera_name)/zed_container" if="$(var zed_stereo_video)">
+      <composable_node pkg="isaac_ros_image_proc" plugin="nvidia::isaac_ros::image_proc::ImageFormatConverterNode"
+                       name="left_rgb8" namespace="$(var camera_ns)/$(var zed_camera_name)">
+        <param name="encoding_desired" value="rgb8"/>
+        <param name="image_width" value="$(var zed_video_width)"/>
+        <param name="image_height" value="$(var zed_video_height)"/>
+        <remap from="image_raw" to="left/color/rect/image"/>
+        <remap from="image" to="left/color/rect/image_rgb8"/>
+      </composable_node>
+      <composable_node pkg="isaac_ros_h264_encoder" plugin="nvidia::isaac_ros::h264_encoder::EncoderNode"
+                       name="left_h264" namespace="$(var camera_ns)/$(var zed_camera_name)">
+        <param name="input_width" value="$(var zed_video_width)"/>
+        <param name="input_height" value="$(var zed_video_height)"/>
+        <remap from="image_raw" to="left/color/rect/image_rgb8"/>
+        <remap from="image_compressed" to="left/color/rect/image/h264"/>
+      </composable_node>
+      <composable_node pkg="isaac_ros_image_proc" plugin="nvidia::isaac_ros::image_proc::ImageFormatConverterNode"
+                       name="right_rgb8" namespace="$(var camera_ns)/$(var zed_camera_name)">
+        <param name="encoding_desired" value="rgb8"/>
+        <param name="image_width" value="$(var zed_video_width)"/>
+        <param name="image_height" value="$(var zed_video_height)"/>
+        <remap from="image_raw" to="right/color/rect/image"/>
+        <remap from="image" to="right/color/rect/image_rgb8"/>
+      </composable_node>
+      <composable_node pkg="isaac_ros_h264_encoder" plugin="nvidia::isaac_ros::h264_encoder::EncoderNode"
+                       name="right_h264" namespace="$(var camera_ns)/$(var zed_camera_name)">
+        <param name="input_width" value="$(var zed_video_width)"/>
+        <param name="input_height" value="$(var zed_video_height)"/>
+        <remap from="image_raw" to="right/color/rect/image_rgb8"/>
+        <remap from="image_compressed" to="right/color/rect/image/h264"/>
       </composable_node>
     </load_composable_node>
 

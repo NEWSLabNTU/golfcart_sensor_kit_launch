@@ -13,8 +13,10 @@
       # camera: mPubRgb publishes mMatLeft with mLeftCamInfoMsg, stamped
       # zed_left_camera_frame_optical.
       publish_rgb: true
-      # Left/right stereo pair. Turn on if visual SLAM is added; nothing
-      # consumes it today and it doubles the image bandwidth off the orin.
+      # Left/right stereo pair. Off here; zed.launch.xml sets it from
+      # zed_stereo_video, which also starts the H.264 encoders that consume it.
+      # Raw left/right never leave the orin: only the encoded streams are
+      # recorded (config/recording/orin_topics.txt), and nothing crosses the link.
       publish_left_right: false
       publish_raw: false
       publish_gray: false
@@ -24,6 +26,15 @@
       # bandwidth wasted on the inter-machine link. Needs SDK >= 5.1; this
       # vehicle runs 5.2.3.
       enable_24bit_output: true
+
+    debug:
+      # Keep the image_transport publishers even once Isaac ROS NITROS is
+      # installed (the isaac-h264-encoder setup step pulls it in). The wrapper
+      # compiles a NITROS path whenever it finds isaac_ros_nitros at build
+      # time and then publishes NITROS images instead, which have no
+      # image/compressed transport: the RGB JPEG the orin records would vanish
+      # on the next rebuild. The encoders take plain sensor_msgs/Image.
+      disable_nitros: true
 
     sensors:
       # imu/data: factory-calibrated, carries orientation. This is what feeds

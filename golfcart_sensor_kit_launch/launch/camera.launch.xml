@@ -40,6 +40,7 @@
   <arg name="capture_profile" default="nvv4l2camerasrc"/>
 
   <arg name="zed_camera_name" default="zed"/>
+  <arg name="zed_stereo_video" default="false" description="ZED X only: H.264 left/right rectified streams for the orin's bag (zed.launch.xml)"/>
 
   <!--
     ZED X. No push-ros-namespace in this branch: zed.launch.xml uses absolute
@@ -50,6 +51,7 @@
     <include file="$(find-pkg-share golfcart_sensor_kit_launch)/launch/zed.launch.xml" if="$(var launch_driver)">
       <arg name="zed_camera_name" value="$(var zed_camera_name)"/>
       <arg name="zed_camera_model" value="$(var camera_model)"/>
+      <arg name="zed_stereo_video" value="$(var zed_stereo_video)"/>
     </include>
   </group>
 
