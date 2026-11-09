@@ -18,19 +18,18 @@
     Which capture path the GMSL cameras use: the name of a directory in
     config/camera_capture/. See the README there.
 
-    A launch argument and nothing else. It used to also read
-    $(env CAMERA_CAPTURE_PROFILE ...), which made the default depend on whatever
-    config/sensors.conf and scripts/env.sh happened to export; the value below is
-    now the only default there is, and overriding it means saying so:
+    A launch argument and nothing else; no environment variable reaches it.
+    The value below is the only default there is, and overriding it means
+    saying so:
 
         ros2 launch golfcart_sensor_kit_launch camera.launch.xml \
             camera_model:=gmslcam capture_profile:=v4l2-mmap
 
-    Note the route: `just launch` reaches this file through
-    tier4_sensing_component.launch.xml and tier4_sensing_launch/sensing.launch.xml,
-    installed Autoware files that forward a fixed set of arguments, and
-    capture_profile is not among them. Through `just launch` this default is what
-    runs. Switching profiles is a launch of this file directly, or an edit here.
+    Through the full stack it is golfcart.launch.yaml's capture_profile
+    argument, passed down by name through golfcart_launch's own
+    tier4_sensing_component copy and sensing.launch.xml:
+
+        just run "capture_profile:=v4l2-mmap"
 
     A profile is a directory of three files, one per camera, each keyed `/**`.
     It was one file keyed `/**/camera_left` and friends; rclrs, which gmslcam is

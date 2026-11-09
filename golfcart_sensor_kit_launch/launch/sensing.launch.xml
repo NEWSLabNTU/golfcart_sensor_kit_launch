@@ -4,29 +4,31 @@
   <arg name="pointcloud_container_name" default="pointcloud_container"/>
   <arg name="vehicle_id" default="$(env VEHICLE_ID default)"/>
   <!--
-    Environment defaults, following the vehicle_id precedent above. This file is
-    reached through tier4_sensing_component.launch.xml and
-    tier4_sensing_launch/sensing.launch.xml, both installed Autoware files that
-    forward a fixed set of arguments, so there is no launch-argument path from
-    golfcart.launch.yaml down to here. An env var is the available channel.
+    Plain launch arguments with plain defaults, no environment. golfcart_launch
+    reaches this file through its own copy of tier4_sensing_component.launch.xml,
+    which passes every one of these by name; the installed Autoware pair
+    (tier4_sensing_component, tier4_sensing_launch/sensing.launch.xml) forwarded
+    four arguments and dropped the rest, which is why these used to read
+    CAMERA_MODEL, IMU_SOURCE, GNSS_RECEIVER, USE_NTRIP and POINTCLOUD_BACKEND.
+    Through that installed pair these defaults are what runs.
+
+    imu_source defaults to zed: the Xsens MTi is broken and publishes nothing.
   -->
-  <arg name="camera_model" default="$(env CAMERA_MODEL gmslcam)" description="gmslcam | zedx | none"/>
-  <arg name="imu_source" default="$(env IMU_SOURCE xsens)" description="xsens | zed"/>
+  <arg name="camera_model" default="gmslcam" description="gmslcam | zedx | none"/>
+  <arg name="capture_profile" default="nvv4l2camerasrc" description="GMSL capture profile, a directory in config/camera_capture/"/>
+  <arg name="imu_source" default="zed" description="zed | xsens"/>
+  <arg name="gnss_receiver" default="ublox" description="ublox | septentrio | none"/>
+  <arg name="use_ntrip" default="false" description="launch the NTRIP client and feed RTCM to the receiver"/>
   <!--
     Which concatenator runs: the CPU one from autoware_pointcloud_preprocessor,
     or the CUDA one from autoware_cuda_pointcloud_preprocessor. Same parameter
     file, same node name, same topics either way.
 
-    Reaches us through the environment for the reason given above, but it is NOT
-    a deployment setting and is not in config/sensors.conf. The interface is a
-    launch argument, `just launch pointcloud_backend:=cuda`, which
-    golfcart.launch.yaml set_env's just before the include.
-
     Before switching, read docs/research/sensing/lidar-pipeline-starvation.md:
     concatenation measured 12.5 ms against a 510 ms pipeline latency, so this is
     not where the delay is.
   -->
-  <arg name="pointcloud_backend" default="$(env POINTCLOUD_BACKEND cuda)" description="cpu | cuda"/>
+  <arg name="pointcloud_backend" default="cuda" description="cpu | cuda"/>
 
   <group>
     <!-- LiDAR Driver -->
@@ -41,6 +43,7 @@
     <include file="$(find-pkg-share golfcart_sensor_kit_launch)/launch/camera.launch.xml">
       <arg name="launch_driver" value="$(var launch_driver)" />
       <arg name="camera_model" value="$(var camera_model)"/>
+      <arg name="capture_profile" value="$(var capture_profile)"/>
     </include>
 
     <!-- IMU Driver -->
@@ -53,6 +56,8 @@
     <!-- GNSS Driver -->
     <include file="$(find-pkg-share golfcart_sensor_kit_launch)/launch/gnss.launch.xml">
       <arg name="launch_driver" value="$(var launch_driver)"/>
+      <arg name="gnss_receiver" value="$(var gnss_receiver)"/>
+      <arg name="use_ntrip" value="$(var use_ntrip)"/>
     </include>
 
     <!-- Vehicle Velocity Converter  -->

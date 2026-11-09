@@ -265,7 +265,7 @@ def launch_setup(context, *args, **kwargs):
     if backend not in BACKENDS:
         raise RuntimeError(
             f"pointcloud_backend must be one of {list(BACKENDS)}, got {backend!r}. "
-            "Set it with `just launch pointcloud_backend:=cuda`."
+            "Set it with `just run pointcloud_backend:=cuda`."
         )
 
     vehicle_info = get_vehicle_info(context)

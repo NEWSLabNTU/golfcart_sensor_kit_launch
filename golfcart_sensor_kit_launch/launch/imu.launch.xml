@@ -14,7 +14,8 @@
     Autoware-side processing, not a driver. See
     docs/design/zed_camera_integration.md.
   -->
-  <arg name="imu_source" default="xsens" description="xsens | zed"/>
+  <!-- zed by default: the Xsens MTi is broken and publishes nothing. -->
+  <arg name="imu_source" default="zed" description="zed | xsens"/>
 
   <group>
     <push-ros-namespace namespace="imu"/>
@@ -37,7 +38,7 @@
         SubstitutionFailure: launch configuration 'imu_raw_name' does not exist
 
       before a single node starts. `ros2 launch` runs the same file fine, so the
-      failure only ever appeared through `just launch` / golfcart-launch.service.
+      failure only ever appeared through `just run` / golfcart-launch.service.
 
       The dict lookup keeps the error loud for an unknown source - it raises
       KeyError naming the bad value - rather than silently falling back to one of

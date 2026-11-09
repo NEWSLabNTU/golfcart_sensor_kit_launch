@@ -8,19 +8,14 @@
 
       U-Blox: Could not open serial port :/dev/ublox-gps
 
-    and respawns every second, so set GNSS_RECEIVER=none in
-    config/sensors.conf on such a host.
+    and respawns every second, so pass gnss_receiver:=none on such a host.
   -->
-  <arg name="gnss_receiver" default="$(env GNSS_RECEIVER ublox)" description="ublox(default) | septentrio | none"/>
+  <arg name="gnss_receiver" default="ublox" description="ublox(default) | septentrio | none"/>
 
   <!--
-    RTK corrections over NTRIP, u-blox only. Read from the environment for the
-    same reason gnss_receiver is: the sensing chain between golfcart.launch.yaml
-    and this file is two installed Autoware files that forward a fixed argument
-    list, so `use_ntrip:=true` reaches golfcart_autoware.launch.xml and stops.
-    golfcart.launch.yaml set_env's USE_NTRIP from its own use_ntrip argument
-    immediately before the include, the way it does POINTCLOUD_BACKEND, so the
-    argument works from the command line; nothing needs USE_NTRIP in a shell.
+    RTK corrections over NTRIP, u-blox only. A plain launch argument:
+    golfcart.launch.yaml passes use_ntrip down by name, through golfcart_launch's
+    own tier4_sensing_component copy and sensing.launch.xml.
 
     The caster and the account are both in config/ntrip_client.param.yaml
     here, which is gitignored because this repository is public: copy
@@ -28,7 +23,7 @@
     file missing the launch fails when use_ntrip is on, naming the path; with
     use_ntrip off the file is never read.
   -->
-  <arg name="use_ntrip" default="$(env USE_NTRIP false)" description="launch the NTRIP client and feed RTCM to the receiver"/>
+  <arg name="use_ntrip" default="false" description="launch the NTRIP client and feed RTCM to the receiver"/>
   <arg name="ntrip_param_file"
        default="$(find-pkg-share golfcart_sensor_kit_launch)/config/ntrip_client.param.yaml"/>
 
@@ -44,7 +39,7 @@
         Undefined variable: 'navsatfix_topic_name'
 
       before any node starts. `ros2 launch` tolerates it, so this only ever broke
-      through `just launch` / golfcart-launch.service. Same fix as imu.launch.xml.
+      through `just run` / golfcart-launch.service. Same fix as imu.launch.xml.
 
       The dict lookup raises KeyError naming an unknown receiver rather than
       silently picking one, which would point Autoware at a topic nothing

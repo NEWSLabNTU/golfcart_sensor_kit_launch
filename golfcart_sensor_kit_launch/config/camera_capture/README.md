@@ -11,17 +11,23 @@ cannot be settled without the hardware, and the hardware is on the vehicle.
 
 The profile is `camera.launch.xml`'s `capture_profile` argument, and only that —
 the `CAMERA_CAPTURE_PROFILE` environment variable it also used to read is gone.
-`just launch` reaches `camera.launch.xml` through two installed Autoware sensing
-files that forward a fixed set of arguments, and `capture_profile` is not one of
-them, so through `just launch` the argument's default is what runs. To try
-another profile, launch this file directly:
+Through the full stack it is `golfcart.launch.yaml`'s `capture_profile`
+argument, passed down by name through golfcart_launch's own copy of
+`tier4_sensing_component.launch.xml`:
+
+```bash
+just run "capture_profile:=v4l2-mmap"
+```
+
+Or launch this file directly:
 
 ```bash
 ros2 launch golfcart_sensor_kit_launch camera.launch.xml \
     camera_model:=gmslcam capture_profile:=v4l2-mmap
 ```
 
-To change what the vehicle runs, change the default in `camera.launch.xml`.
+To change what the vehicle runs by default, change the default in
+`golfcart.launch.yaml` (and `camera.launch.xml`, for a direct launch).
 
 ## Layout: one file per camera
 

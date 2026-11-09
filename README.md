@@ -148,18 +148,19 @@ ros2 launch golfcart_sensor_kit_launch camera.launch.xml camera_model:=zedx
 #### IMU Configuration
 
 ```bash
-# Xsens MTi over CAN (default)
-ros2 launch golfcart_sensor_kit_launch imu.launch.xml imu_source:=xsens
-
-# ZED X built-in IMU - the ZED node must be running on the orin
+# ZED X built-in IMU (default; the Xsens is broken) - the ZED node must be running on the orin
 ros2 launch golfcart_sensor_kit_launch imu.launch.xml imu_source:=zed
+
+# Xsens MTi over CAN
+ros2 launch golfcart_sensor_kit_launch imu.launch.xml imu_source:=xsens
 ```
 
-Through the full stack these are reached by environment variable, since the
-Autoware sensing launch chain forwards only a fixed set of arguments:
+Through the full stack they are ordinary launch arguments of
+`golfcart.launch.yaml`, passed down by name through golfcart_launch's own copy
+of `tier4_sensing_component.launch.xml`. No environment variable is read:
 
 ```bash
-CAMERA_MODEL=gmslcam IMU_SOURCE=zed just launch
+just run "camera_model:=gmslcam imu_source:=xsens"
 ```
 
 #### GNSS Configuration
