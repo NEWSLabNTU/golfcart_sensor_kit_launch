@@ -209,6 +209,15 @@ def make_cuda_preprocessor_nodes(context, ns, raw_topic, vehicle_info, _intra_pr
         "crop_box.min_z": [vehicle_info["min_height_offset"]] * 2,
         "crop_box.max_z": [vehicle_info["max_height_offset"]] * 2,
         "crop_box.negative": [True, True],
+        # Required from Autoware 2.1.0 (no default; the node aborts without
+        # them). 1.5.0's node does not declare them and ignores them, so one
+        # source serves both. Points beyond max_input_point_count are dropped:
+        # the VLP-32C at 600 rpm single return is 32 x ~1808 = ~58k points per
+        # scan, and this leaves room for dual return or 300 rpm. Upstream's
+        # 691200 is sized for a Hesai OT128.
+        "max_input_point_count": 131072,
+        "max_twist_frequency_hz": 200.0,
+        "max_imu_frequency_hz": 200.0,
     }
     return [
         ComposableNode(

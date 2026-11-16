@@ -44,7 +44,10 @@
     frame_id: velodyne
     advanced_diagnostics: false
     diag_span: 1000
-    calibration_file: $(find-pkg-share nebula_decoders)/calibration/velodyne/VLP32.yaml
+    # Per Autoware release, so a launch argument: lidar.launch.xml declares it
+    # (1.5.0's nebula_decoders by default). Nebula loads this file with
+    # allow_substs, which is what expands it.
+    calibration_file: $(var vlp32_calibration_file)
     min_range: 0.3
     max_range: 300.0
     cloud_min_angle: 0

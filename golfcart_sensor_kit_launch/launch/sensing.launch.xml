@@ -1,4 +1,7 @@
 <launch>
+  <!-- Forwarded to lidar.launch.xml; see there. -->
+  <arg name="nebula_velodyne_launch_file" default="$(find-pkg-share nebula_ros)/launch/velodyne_launch_all_hw.xml"/>
+  <arg name="vlp32_calibration_file" default="$(find-pkg-share nebula_decoders)/calibration/velodyne/VLP32.yaml"/>
   <arg name="launch_driver" default="true" description="do launch driver"/>
   <arg name="vehicle_mirror_param_file" description="path to the file of vehicle mirror position yaml"/>
   <arg name="pointcloud_container_name" default="pointcloud_container"/>
@@ -37,6 +40,8 @@
       <arg name="vehicle_mirror_param_file" value="$(var vehicle_mirror_param_file)"/>
       <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
       <arg name="pointcloud_backend" value="$(var pointcloud_backend)"/>
+      <arg name="nebula_velodyne_launch_file" value="$(var nebula_velodyne_launch_file)"/>
+      <arg name="vlp32_calibration_file" value="$(var vlp32_calibration_file)"/>
     </include>
 
     <!-- Camera Driver -->
